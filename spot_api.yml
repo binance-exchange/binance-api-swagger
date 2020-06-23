@@ -307,8 +307,207 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
+  /klines:
+      get:
+        summary: Kline/Candlestick Data
+        description: |-
+          Kline/candlestick bars for a symbol.\
+          Klines are uniquely identified by their open time.
+
+          Weight 1
+        tags:
+          - Market Data
+        parameters:
+          - name: symbol
+            in: query
+            required: true
+            description: trading symbol, e.g. BNBUSDT
+            schema:
+              type: string
+            example: 'BNBUSDT'
+          - name: interval
+            in: query
+            description: kline intervals
+            schema:
+              type: string
+            example: '1m'
+          - name: startTime
+            in: query
+            description: Timestamp in ms to get aggregate trades from INCLUSIVE.
+            schema:
+              type: integer
+          - name: endTime
+            in: query
+            description: Timestamp in ms to get aggregate trades until INCLUSIVE.
+            schema:
+              type: integer    
+          - name: limit
+            in: query
+            description: Default 500; max 1000.
+            schema:
+              type: integer
+        responses:
+          '200':
+            description: kline data
+            content:
+              application/json:
+                schema:
+                  type: array
+                example:
+                  -  
+                    - 1592864100000
+                    - "9668.28000000"
+                    - "9668.28000000"
+                    - "9662.90000000"
+                    - "9663.80000000"
+                    - "46.46543700"
+                    - 1592864159999,
+                    - "449098.94232016"
+                    - 401
+                    - "10.46540600"
+                    - "101138.68313192"
+                    - "0"
+          '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+  /avgPrice:
+      get:
+        summary: Current Average Price
+        description: |-
+          Current average price for a symbol.
+
+          Weight 1
+        tags:
+          - Market Data
+        parameters:
+          - name: symbol
+            in: query
+            required: true
+            description: trading symbol, e.g. BNBUSDT
+            schema:
+              type: string
+            example: 'BNBUSDT'
+        responses:
+          '200':
+            description: average price
+            content:
+              application/json:
+                schema:
+                  type: array
+                example:
+                  mins: 5
+                  price: "9.35751834"
+          '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+  /ticker/24hr:
+      get:
+        summary: 24hr Ticker Price Change Statistics
+        description: |-
+          24 hour rolling window price change statistics. Careful when accessing this with no symbol.
+
+          Weight:\
+          1 for a single symbol;\
+          40 when the symbol parameter is omitted
+        tags:
+          - Market Data
+        parameters:
+          - name: symbol
+            in: query
+            description: trading symbol, e.g. BNBUSDT
+            schema:
+              type: string
+            example: 'BNBUSDT'
+        responses:
+          '200':
+            description: 24hr ticker
+            content:
+              application/json:
+                schema:
+                  oneOf:
+                    - $ref: '#/components/schemas/ticker'
+                    - $ref: '#/components/schemas/tickerList'
+          '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
 components:
   schemas:
+    tickerList:
+      type: array
+      items:
+        $ref: '#/components/schemas/ticker'
+    ticker:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "BNBBTC"
+        priceChange:
+          type: string
+          example: "0.17160000"
+        priceChangePercent:
+          type: string
+          example: "1.060"
+        prevClosePrice:
+          type: string
+          example: "16.35920000"
+        lastPrice:
+          type: string
+          example: "27.84000000"
+        bidPrice:
+          type: string
+          example: "16.34488284"
+        bidQty:
+          type: string
+          example: "16.34488284"
+        askPrice:
+          type: string
+          example: "16.35920000"
+        askQty:
+          type: string
+          example: "25.06000000"
+        openPrice:
+          type: string
+          example: "16.18760000"
+        highPrice:
+          type: string
+          example: "16.55000000"
+        lowPrice:
+          type: string
+          example: "16.16940000"
+        volume:
+          type: string
+          example: "1678279.95000000"
+        quoteVolume:
+          type: string
+          example: "27431289.14792300"
+        openTime:
+          type: integer
+          example: 1592808788637
+        closeTime:
+          type: integer
+          example: 1592895188637
+        firstId:
+          type: integer
+          example: 62683296
+        lastId:
+          type: integer
+          example: 62739253
+        count:
+          type: integer
+          example: 55958
+
+
+
     trade:
       type: object
       properties:
