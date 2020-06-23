@@ -439,8 +439,109 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
+  /ticker/price:
+      get:
+        summary: Symbol Price Ticker
+        description: |-
+          Latest price for a symbol or symbols.
+
+          Weight:\
+          1 for a single symbol;\
+          2 when the symbol parameter is omitted
+        tags:
+          - Market Data
+        parameters:
+          - name: symbol
+            in: query
+            description: trading symbol, e.g. BNBUSDT
+            schema:
+              type: string
+            example: 'BNBUSDT'
+        responses:
+          '200':
+            description: Price ticker
+            content:
+              application/json:
+                schema:
+                  oneOf:
+                    - $ref: '#/components/schemas/priceTicker'
+                    - $ref: '#/components/schemas/priceTickerList'
+          '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+  /ticker/bookTicker:
+      get:
+        summary: Symbol Order Book Ticker
+        description: |-
+          Best price/qty on the order book for a symbol or symbols.
+
+          Weight:\
+          1 for a single symbol;\
+          40 when the symbol parameter is omitted
+        tags:
+          - Market Data
+        parameters:
+          - name: symbol
+            in: query
+            description: trading symbol, e.g. BNBUSDT
+            schema:
+              type: string
+            example: 'BNBUSDT'
+        responses:
+          '200':
+            description: orderbook ticker
+            content:
+              application/json:
+                schema:
+                  oneOf:
+                    - $ref: '#/components/schemas/bookTicker'
+                    - $ref: '#/components/schemas/bookTickerList'
+          '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'                
 components:
   schemas:
+    bookTickerList:
+      type: array
+      items:
+        $ref: '#/components/schemas/bookTicker'
+    bookTicker:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "BNBBTC"
+        bidPrice:
+          type: string
+          example: "16.36240000"
+        bidQty:
+          type: string
+          example: "256.78000000"
+        askPrice:
+          type: string
+          example: "16.36450000"
+        askQty:
+          type: string
+          example: "12.56000000"
+    priceTickerList:
+      type: array
+      items:
+        $ref: '#/components/schemas/priceTicker'
+    priceTicker:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "BNBBTC"
+        price:
+          type: string
+          example: "0.17160000"
     tickerList:
       type: array
       items:
@@ -583,4 +684,4 @@ components:
         msg:
           type: string
           description: error message
-          example: "Mandatory parameter 'symbol' was not sent, was empty/null, or malformed."
+          example: "Mandatory parameter %s was not sent, was empty/null, or malformed."
