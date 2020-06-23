@@ -3,8 +3,14 @@ info:
   title: Binance SPOT Public API
   description: The swagger file of Binance Public API
   version: '1.0'
+  license:
+    name: MIT
 servers:
   - url: https://api.binance.com/api/v3
+  - url: https://testnet.binance.vision/api/v3
+tags:
+  - name: Market Data
+    description: Market Data
 paths:
   /ping:
     get:
@@ -123,9 +129,10 @@ paths:
         - name: symbol
           in: query
           required: true
-          description: trading symbol, e.g. BTCUSDT
+          description: trading symbol, e.g. BNBUSDT
           schema:
             type: string
+          example: 'BNBUSDT'
         - name: limit
           in: query
           description: Default 100; max 1000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
@@ -133,11 +140,11 @@ paths:
             type: integer           
       responses:
         '200':
-          description: Binance server UTC timestamp
+          description: order books
           content:
             application/json:
               schema:
-                title: server time
+                title: open orders
                 type: object
               example:
                 lastUpdateId: 1060776800
@@ -155,20 +162,30 @@ paths:
                 - 
                   -  "16.39800000"
                   -  "5.57000000"
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+
   /trades:
     get:
       summary: Recent Trades List
-      description: Get recent trades (up to last 500).
-        <br/> Weight 1
+      description: |-
+        Get recent trades (up to last 500).
+        
+        Weight 1
       tags:
         - Market Data
       parameters:
         - name: symbol
           in: query
           required: true
-          description: trading symbol, e.g. BTCUSDT
+          description: trading symbol, e.g. BNBUSDT
           schema:
             type: string
+          example: 'BNBUSDT'
         - name: limit
           in: query
           description: Default 100; max 1000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
@@ -176,25 +193,195 @@ paths:
             type: integer           
       responses:
         '200':
-          description: Binance server UTC timestamp
+          description: trade list
           content:
             application/json:
               schema:
-                title: server time
-                type: object
-              example:
-                lastUpdateId: 1060776800
-                bids: 
-                - 
-                  - "16.39580000"
-                  - "19.41000000"
-                - 
-                  - "16.39450000"
-                  -  "1.00000000"
-                asks: 
-                - 
-                  - "16.39790000"
-                  -  "25.48000000"
-                - 
-                  -  "16.39800000"
-                  -  "5.57000000"
+                type: array
+                items:
+                  $ref: '#/components/schemas/trade'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+                
+  /historicalTrades:
+    get:
+      summary: Old Trade Lookup
+      description: |-
+        Get older market trades.
+        
+        Weight 5
+      tags:
+        - Market Data
+      parameters:
+        - name: X-MBX-APIKEY
+          in: header
+          description: API Key
+          required: true
+          schema:
+            type: string
+        - name: symbol
+          in: query
+          required: true
+          description: trading symbol, e.g. BNBUSDT
+          schema:
+            type: string
+          example: 'BNBUSDT'
+        - name: limit
+          in: query
+          description: Default 500; max 1000.
+          schema:
+            type: integer
+        - name: fromId
+          in: query
+          description: Trade id to fetch from. Default gets most recent trades.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: trade list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/trade'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /aggTrades:
+      get:
+        summary: Compressed/Aggregate Trades List
+        description: |-
+          Get compressed, aggregate trades. Trades that fill at the time, from the same order, with the same price will have the quantity aggregated.
+
+          Weight 1
+        tags:
+          - Market Data
+        parameters:
+          - name: symbol
+            in: query
+            required: true
+            description: trading symbol, e.g. BNBUSDT
+            schema:
+              type: string
+            example: 'BNBUSDT'
+          - name: fromId
+            in: query
+            description: Id to get aggregate trades from INCLUSIVE.
+            schema:
+              type: integer
+          - name: startTime
+            in: query
+            description: Timestamp in ms to get aggregate trades from INCLUSIVE.
+            schema:
+              type: integer
+          - name: endTime
+            in: query
+            description: Timestamp in ms to get aggregate trades until INCLUSIVE.
+            schema:
+              type: integer    
+          - name: limit
+            in: query
+            description: Default 500; max 1000.
+            schema:
+              type: integer
+        responses:
+          '200':
+            description: trade list
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/aggTrade'
+          '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+components:
+  schemas:
+    trade:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: trade id
+          example: 345196462
+        price:
+          type: string
+          description: price
+          example: "9638.99000000"
+        qty:
+          type: string
+          description: amount of base asset
+          example: "0.02077200"
+        quoteQty:
+          type: string
+          description: amount of quote asset
+          example: "0.02077200"
+        time:
+          type: integer
+          description: trade timestamp
+          example: 1592887772684
+        isBuyerMaker:
+          type: boolean
+          example: true
+        isBestMatch:
+          type: boolean
+          example: true
+    aggTrade:
+      type: object
+      properties:
+        a:
+          type: integer
+          description: trade id
+          example: 345196462
+        p:
+          type: string
+          description: price
+          example: "9638.99000000"
+        q:
+          type: string
+          description: amount of base asset
+          example: "0.02077200"
+        f:
+          type: integer
+          description: First tradeId
+          example: 345212431
+        l:
+          type: integer
+          description: Last tradeId
+          example: 345212431
+        T:
+          type: boolean
+          description: Timestamp
+          example: 1592892011154
+        m:
+          type: boolean
+          description: Was the buyer the maker?
+          example: true
+        M:
+          type: boolean
+          description: Was the trade the best price match?
+          example: true
+    
+    validationError:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: error code
+          example: -1102
+        msg:
+          type: string
+          description: error message
+          example: "Mandatory parameter 'symbol' was not sent, was empty/null, or malformed."
