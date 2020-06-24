@@ -11,6 +11,8 @@ servers:
 tags:
   - name: Market Data
     description: Market Data
+  - name: Trade
+    description: Account and Trade
 paths:
   /ping:
     get:
@@ -20,7 +22,8 @@ paths:
         - Market Data
       responses:
         '200':
-          description: '{}'
+          description: ping result
+          content: {}
   /time:
     get:
       summary: Check Server Time
@@ -126,18 +129,13 @@ paths:
       tags:
         - Market Data
       parameters:
-        - name: symbol
-          in: query
-          required: true
-          description: trading symbol, e.g. BNBUSDT
-          schema:
-            type: string
-          example: 'BNBUSDT'
+        - $ref: '#/components/parameters/symbol'
         - name: limit
           in: query
           description: Default 100; max 1000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
           schema:
-            type: integer           
+            type: integer
+          example: 100         
       responses:
         '200':
           description: order books
@@ -168,7 +166,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
-
   /trades:
     get:
       summary: Recent Trades List
@@ -179,18 +176,13 @@ paths:
       tags:
         - Market Data
       parameters:
-        - name: symbol
-          in: query
-          required: true
-          description: trading symbol, e.g. BNBUSDT
-          schema:
-            type: string
-          example: 'BNBUSDT'
+        - $ref: '#/components/parameters/symbol'
         - name: limit
           in: query
           description: Default 100; max 1000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
           schema:
-            type: integer           
+            type: integer
+          example: 100        
       responses:
         '200':
           description: trade list
@@ -205,8 +197,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
-                
+                $ref: '#/components/schemas/validationError'             
   /historicalTrades:
     get:
       summary: Old Trade Lookup
@@ -216,30 +207,11 @@ paths:
         Weight 5
       tags:
         - Market Data
-      parameters:
-        - name: X-MBX-APIKEY
-          in: header
-          description: API Key
-          required: true
-          schema:
-            type: string
-        - name: symbol
-          in: query
-          required: true
-          description: trading symbol, e.g. BNBUSDT
-          schema:
-            type: string
-          example: 'BNBUSDT'
-        - name: limit
-          in: query
-          description: Default 500; max 1000.
-          schema:
-            type: integer
-        - name: fromId
-          in: query
-          description: Trade id to fetch from. Default gets most recent trades.
-          schema:
-            type: integer
+      parameters:          
+        - $ref: '#/components/parameters/APIKey'
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/tradeId'
       responses:
         '200':
           description: trade list
@@ -265,33 +237,11 @@ paths:
         tags:
           - Market Data
         parameters:
-          - name: symbol
-            in: query
-            required: true
-            description: trading symbol, e.g. BNBUSDT
-            schema:
-              type: string
-            example: 'BNBUSDT'
-          - name: fromId
-            in: query
-            description: Id to get aggregate trades from INCLUSIVE.
-            schema:
-              type: integer
-          - name: startTime
-            in: query
-            description: Timestamp in ms to get aggregate trades from INCLUSIVE.
-            schema:
-              type: integer
-          - name: endTime
-            in: query
-            description: Timestamp in ms to get aggregate trades until INCLUSIVE.
-            schema:
-              type: integer    
-          - name: limit
-            in: query
-            description: Default 500; max 1000.
-            schema:
-              type: integer
+          - $ref: '#/components/parameters/symbol'
+          - $ref: '#/components/parameters/tradeId'
+          - $ref: '#/components/parameters/startTime'
+          - $ref: '#/components/parameters/endTime'
+          - $ref: '#/components/parameters/limit'
         responses:
           '200':
             description: trade list
@@ -318,34 +268,16 @@ paths:
         tags:
           - Market Data
         parameters:
-          - name: symbol
-            in: query
-            required: true
-            description: trading symbol, e.g. BNBUSDT
-            schema:
-              type: string
-            example: 'BNBUSDT'
+          - $ref: '#/components/parameters/symbol'
           - name: interval
             in: query
             description: kline intervals
             schema:
               type: string
             example: '1m'
-          - name: startTime
-            in: query
-            description: Timestamp in ms to get aggregate trades from INCLUSIVE.
-            schema:
-              type: integer
-          - name: endTime
-            in: query
-            description: Timestamp in ms to get aggregate trades until INCLUSIVE.
-            schema:
-              type: integer    
-          - name: limit
-            in: query
-            description: Default 500; max 1000.
-            schema:
-              type: integer
+          - $ref: '#/components/parameters/startTime'
+          - $ref: '#/components/parameters/endTime'
+          - $ref: '#/components/parameters/limit'
         responses:
           '200':
             description: kline data
@@ -383,13 +315,7 @@ paths:
         tags:
           - Market Data
         parameters:
-          - name: symbol
-            in: query
-            required: true
-            description: trading symbol, e.g. BNBUSDT
-            schema:
-              type: string
-            example: 'BNBUSDT'
+          - $ref: '#/components/parameters/symbol'
         responses:
           '200':
             description: average price
@@ -418,12 +344,7 @@ paths:
         tags:
           - Market Data
         parameters:
-          - name: symbol
-            in: query
-            description: trading symbol, e.g. BNBUSDT
-            schema:
-              type: string
-            example: 'BNBUSDT'
+          - $ref: '#/components/parameters/optionalSymbol'
         responses:
           '200':
             description: 24hr ticker
@@ -451,12 +372,7 @@ paths:
         tags:
           - Market Data
         parameters:
-          - name: symbol
-            in: query
-            description: trading symbol, e.g. BNBUSDT
-            schema:
-              type: string
-            example: 'BNBUSDT'
+          - $ref: '#/components/parameters/optionalSymbol'
         responses:
           '200':
             description: Price ticker
@@ -473,32 +389,211 @@ paths:
                 schema:
                   $ref: '#/components/schemas/validationError'
   /ticker/bookTicker:
-      get:
-        summary: Symbol Order Book Ticker
+    get:
+      summary: Symbol Order Book Ticker
+      description: |-
+        Best price/qty on the order book for a symbol or symbols.
+
+        Weight:\
+        1 for a single symbol;\
+        40 when the symbol parameter is omitted
+      tags:
+        - Market Data
+      parameters:
+        - $ref: '#/components/parameters/optionalSymbol'
+      responses:
+        '200':
+          description: orderbook ticker
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/bookTicker'
+                  - $ref: '#/components/schemas/bookTickerList'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'    
+  /order/test:
+      post:
+        summary: Test New Order (TRADE)
         description: |-
-          Best price/qty on the order book for a symbol or symbols.
+          Test new order creation and signature/recvWindow long. 
+          Creates and validates a new order but does not send it into the matching engine.
 
           Weight:\
-          1 for a single symbol;\
-          40 when the symbol parameter is omitted
+          1 
         tags:
-          - Market Data
+          - Trade
         parameters:
-          - name: symbol
+          - $ref: '#/components/parameters/symbol'
+          - name: side
             in: query
-            description: trading symbol, e.g. BNBUSDT
+            required: true
+            description: BUY or SELL
             schema:
               type: string
-            example: 'BNBUSDT'
+          - name: type
+            in: query
+            required: true
+            description: LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER etc
+            schema:
+              type: string
+              enum: [LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER]
+          - name: timeInForce
+            in: query
+            description: GTC, IOC or FOK
+            schema:
+              type: string
+              enum: [GTC, IOC, FOK]
+          - name: quantity
+            in: query
+            description: order quantity
+            schema:
+              type: number
+              format: float
+          - name: quoteOrderQty
+            in: query
+            description: quote quantity
+            schema:
+              type: number
+              format: float
+          - name: price
+            in: query
+            description: order price
+            schema:
+              type: number
+              format: float
+          - name: newClientOrderId
+            in: query
+            description: order id by client
+            schema:
+              type: string
+          - name: stopPrice
+            in: query
+            description: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
+            schema:
+              type: number
+              format: float
+          - name: icebergQty
+            in: query
+            description: Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
+            schema:
+              type: number
+              format: float
+          - name: newOrderRespType
+            in: query
+            description: ACK, RESULT, or FULL
+            schema:
+              type: string
+          - name: recvWindow
+            in: query
+            description: The value cannot be greater than 60000
+            schema:
+              type: integer
+          - $ref: '#/components/parameters/recvWindow'
+          - $ref: '#/components/parameters/timestamp'
+          - $ref: '#/components/parameters/signature'
         responses:
           '200':
-            description: orderbook ticker
+            description: test order result
+            content: {}
+          '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+  /order:
+      post:
+        summary: New Order (TRADE)
+        description: |-
+          Send in a new order.
+
+          Weight: 1 
+        tags:
+          - Trade
+        parameters:
+          - $ref: '#/components/parameters/symbol'
+          - name: side
+            in: query
+            required: true
+            description: BUY or SELL
+            schema:
+              type: string
+          - name: type
+            in: query
+            required: true
+            description: LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER etc
+            schema:
+              type: string
+              enum: [LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER]
+          - name: timeInForce
+            in: query
+            description: GTC, IOC or FOK
+            schema:
+              type: string
+              enum: [GTC, IOC, FOK]
+          - name: quantity
+            in: query
+            description: order quantity
+            schema:
+              type: number
+              format: float
+          - name: quoteOrderQty
+            in: query
+            description: quote quantity
+            schema:
+              type: number
+              format: float
+          - name: price
+            in: query
+            description: order price
+            schema:
+              type: number
+              format: float
+          - name: newClientOrderId
+            in: query
+            description: order id by client
+            schema:
+              type: string
+          - name: stopPrice
+            in: query
+            description: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
+            schema:
+              type: number
+              format: float
+          - name: icebergQty
+            in: query
+            description: Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
+            schema:
+              type: number
+              format: float
+          - name: newOrderRespType
+            in: query
+            description: ACK, RESULT, or FULL
+            schema:
+              type: string
+          - name: recvWindow
+            in: query
+            description: The value cannot be greater than 60000
+            schema:
+              type: integer
+          - $ref: '#/components/parameters/recvWindow'
+          - $ref: '#/components/parameters/timestamp'
+          - $ref: '#/components/parameters/signature'
+        responses:
+          '200':
+            description: order result
             content:
               application/json:
                 schema:
                   oneOf:
-                    - $ref: '#/components/schemas/bookTicker'
-                    - $ref: '#/components/schemas/bookTickerList'
+                    - $ref: '#/components/schemas/orderResponseAck'
+                    - $ref: '#/components/schemas/orderResponseResult'
+                    - $ref: '#/components/schemas/orderResponseFull'
           '400':
             description: validation error
             content:
@@ -506,7 +601,209 @@ paths:
                 schema:
                   $ref: '#/components/schemas/validationError'                
 components:
+  parameters:
+    APIKey:
+      name: X-MBX-APIKEY
+      in: header
+      description: API Key
+      required: true
+      schema:
+        type: string
+    symbol:
+      name: symbol
+      in: query
+      required: true
+      description: trading symbol, e.g. BNBUSDT
+      schema:
+        type: string
+      example: 'BNBUSDT'
+    optionalSymbol:
+      name: symbol
+      in: query
+      description: trading symbol, e.g. BNBUSDT
+      schema:
+        type: string
+      example: 'BNBUSDT'
+    limit:
+      name: limit
+      in: query
+      description: Default 500; max 1000.
+      schema:
+        type: integer
+      example: 500
+    tradeId:
+      name: fromId
+      in: query
+      description: Trade id to fetch from. Default gets most recent trades.
+      schema:
+        type: integer
+    startTime:
+      name: startTime
+      in: query
+      description: Timestamp in ms to get aggregate trades from INCLUSIVE.
+      schema:
+        type: integer
+    endTime:
+      name: endTime
+      in: query
+      description: Timestamp in ms to get aggregate trades until INCLUSIVE.
+      schema:
+        type: integer
+    recvWindow:
+      name: recvWindow
+      in: query
+      description: The value cannot be greater than 60000
+      schema:
+        type: integer
+      example: 5000
+    timestamp:
+      name: timestamp
+      in: query
+      required: true
+      description: UTC timestamp
+      schema:
+        type: integer
+    signature:
+      name: signature
+      in: query
+      required: true
+      description: signature
+      schema:
+        type: string
+
+
   schemas:
+    orderResponseAck:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "BNBBTC"
+        orderId:
+          type: integer
+          example: 28
+        orderListId:
+          type: integer
+          description: Unless OCO, value will be -1
+          example: -1
+        clientOrderId:
+          type: string
+          example: "6gCrw2kRUAF9CvJDGP16IP"
+        transactTime:
+          type: integer
+          example: 1507725176595
+    orderResponseResult:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "BNBBTC"
+        orderId:
+          type: integer
+          example: 28
+        orderListId:
+          type: integer
+          description: Unless OCO, value will be -1
+          example: -1
+        clientOrderId:
+          type: string
+          example: "6gCrw2kRUAF9CvJDGP16IP"
+        transactTime:
+          type: integer
+          example: 1507725176595
+        price:
+          type: number
+          format: float
+          example: "1.00000000"
+        origQty:
+          type: number
+          format: float
+          example: "10.00000000"
+        executedQty:
+          type: number
+          format: float
+          example: "10.00000000"
+        cummulativeQuoteQty:
+          type: number
+          format: float
+          example: "10.00000000"
+        status:
+          type: string
+          example: "FILLED"
+        timeInForce:
+          type: string
+          example: "GTC"
+        type:
+          type: string
+          example: "MARKET"
+        side:
+          type: string
+          example: "SELL"
+    orderResponseFull:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "BNBBTC"
+        orderId:
+          type: integer
+          example: 28
+        orderListId:
+          type: integer
+          description: Unless OCO, value will be -1
+          example: -1
+        clientOrderId:
+          type: string
+          example: "6gCrw2kRUAF9CvJDGP16IP"
+        transactTime:
+          type: integer
+          example: 1507725176595
+        price:
+          type: number
+          format: float
+          example: "1.00000000"
+        origQty:
+          type: number
+          format: float
+          example: "10.00000000"
+        executedQty:
+          type: number
+          format: float
+          example: "10.00000000"
+        cummulativeQuoteQty:
+          type: number
+          format: float
+          example: "10.00000000"
+        status:
+          type: string
+          example: "FILLED"
+        timeInForce:
+          type: string
+          example: "GTC"
+        type:
+          type: string
+          example: "MARKET"
+        side:
+          type: string
+          example: "SELL"
+        fills:
+          type: array
+          items:
+            type: string
+            properties:
+              price:
+                type: string
+                example: "4000.00000000"
+              qty:
+                type: string
+                example: "1.00000000"
+              commission:
+                type: string
+                example: "4.00000000"
+              commissionAsset:
+                type: string
+                example: "USDT"
+
     bookTickerList:
       type: array
       items:
