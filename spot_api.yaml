@@ -211,7 +211,7 @@ paths:
         - $ref: '#/components/parameters/APIKey'
         - $ref: '#/components/parameters/symbol'
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/tradeId'
+        - $ref: '#/components/parameters/fromId'
       responses:
         '200':
           description: trade list
@@ -238,7 +238,7 @@ paths:
           - Market Data
         parameters:
           - $ref: '#/components/parameters/symbol'
-          - $ref: '#/components/parameters/tradeId'
+          - $ref: '#/components/parameters/fromId'
           - $ref: '#/components/parameters/startTime'
           - $ref: '#/components/parameters/endTime'
           - $ref: '#/components/parameters/limit'
@@ -417,95 +417,95 @@ paths:
               schema:
                 $ref: '#/components/schemas/validationError'    
   /order/test:
-      post:
-        summary: Test New Order (TRADE)
-        description: |-
-          Test new order creation and signature/recvWindow long. 
-          Creates and validates a new order but does not send it into the matching engine.
+    post:
+      summary: Test New Order (TRADE)
+      description: |-
+        Test new order creation and signature/recvWindow long. 
+        Creates and validates a new order but does not send it into the matching engine.
 
-          Weight:\
-          1 
-        tags:
-          - Trade
-        parameters:
-          - $ref: '#/components/parameters/symbol'
-          - name: side
-            in: query
-            required: true
-            description: BUY or SELL
-            schema:
-              type: string
-          - name: type
-            in: query
-            required: true
-            description: LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER etc
-            schema:
-              type: string
-              enum: [LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER]
-          - name: timeInForce
-            in: query
-            description: GTC, IOC or FOK
-            schema:
-              type: string
-              enum: [GTC, IOC, FOK]
-          - name: quantity
-            in: query
-            description: order quantity
-            schema:
-              type: number
-              format: float
-          - name: quoteOrderQty
-            in: query
-            description: quote quantity
-            schema:
-              type: number
-              format: float
-          - name: price
-            in: query
-            description: order price
-            schema:
-              type: number
-              format: float
-          - name: newClientOrderId
-            in: query
-            description: order id by client
-            schema:
-              type: string
-          - name: stopPrice
-            in: query
-            description: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
-            schema:
-              type: number
-              format: float
-          - name: icebergQty
-            in: query
-            description: Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
-            schema:
-              type: number
-              format: float
-          - name: newOrderRespType
-            in: query
-            description: ACK, RESULT, or FULL
-            schema:
-              type: string
-          - name: recvWindow
-            in: query
-            description: The value cannot be greater than 60000
-            schema:
-              type: integer
-          - $ref: '#/components/parameters/recvWindow'
-          - $ref: '#/components/parameters/timestamp'
-          - $ref: '#/components/parameters/signature'
-        responses:
-          '200':
-            description: test order result
-            content: {}
-          '400':
-            description: validation error
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/validationError'
+        Weight:\
+        1 
+      tags:
+        - Trade
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - name: side
+          in: query
+          required: true
+          description: BUY or SELL
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: true
+          description: LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER etc
+          schema:
+            type: string
+            enum: [LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER]
+        - name: timeInForce
+          in: query
+          description: GTC, IOC or FOK
+          schema:
+            type: string
+            enum: [GTC, IOC, FOK]
+        - name: quantity
+          in: query
+          description: order quantity
+          schema:
+            type: number
+            format: float
+        - name: quoteOrderQty
+          in: query
+          description: quote quantity
+          schema:
+            type: number
+            format: float
+        - name: price
+          in: query
+          description: order price
+          schema:
+            type: number
+            format: float
+        - name: newClientOrderId
+          in: query
+          description: order id by client
+          schema:
+            type: string
+        - name: stopPrice
+          in: query
+          description: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
+          schema:
+            type: number
+            format: float
+        - name: icebergQty
+          in: query
+          description: Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
+          schema:
+            type: number
+            format: float
+        - name: newOrderRespType
+          in: query
+          description: ACK, RESULT, or FULL
+          schema:
+            type: string
+        - name: recvWindow
+          in: query
+          description: The value cannot be greater than 60000
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: test order result
+          content: {}
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
   /order:
       get:
         summary: Query Order (USER_DATA)
@@ -754,6 +754,247 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
+  /order/oco:
+    post:
+      summary: New OCO (TRADE)
+      description: |-
+        Send in a new OCO
+
+        Weight:\
+        1 
+      tags:
+        - Trade
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/listClientOrderId'
+        - $ref: '#/components/parameters/side'
+        - name: quantity
+          in: query
+          description: order quantity
+          required: true
+          schema:
+            type: number
+            format: float
+        - name: limitClientOrderId
+          in: query
+          description: A unique Id for the limit order  
+          schema:
+            type: number
+            format: float
+        - name: type
+          in: query
+          required: true
+          description: LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER etc
+          schema:
+            type: string
+            enum: [LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER]
+        - name: timeInForce
+          in: query
+          description: GTC, IOC or FOK
+          schema:
+            type: string
+            enum: [GTC, IOC, FOK]
+        - name: quantity
+          in: query
+          description: order quantity
+          schema:
+            type: number
+            format: float
+        - name: quoteOrderQty
+          in: query
+          description: quote quantity
+          schema:
+            type: number
+            format: float
+        - name: price
+          in: query
+          description: order price
+          schema:
+            type: number
+            format: float
+        - name: newClientOrderId
+          in: query
+          description: order id by client
+          schema:
+            type: string
+        - name: stopPrice
+          in: query
+          description: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
+          schema:
+            type: number
+            format: float
+        - name: icebergQty
+          in: query
+          description: Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
+          schema:
+            type: number
+            format: float
+        - name: newOrderRespType
+          in: query
+          description: ACK, RESULT, or FULL
+          schema:
+            type: string
+        - name: recvWindow
+          in: query
+          description: The value cannot be greater than 60000
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: test order result
+          content: {}
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+
+  /orderList:
+    get:
+      summary: Query OCO (USER_DATA)
+      description: |-
+        Retrieves a specific OCO based on provided optional parameters
+
+        Weight: 1 
+      tags:
+        - Trade
+      parameters:
+        - $ref: '#/components/parameters/orderListId'
+        - $ref: '#/components/parameters/origClientOrderId'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OCOOrder'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+    delete:
+      summary: Cancel OCO (TRADE)
+      description: |-
+        Cancel an entire Order List
+
+        Weight: 1 
+      tags:
+        - Trade
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/orderListId'
+        - $ref: '#/components/parameters/listClientOrderId'
+        - $ref: '#/components/parameters/newClientOrderId'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/OCOOrderReport'               
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /allOrderList:
+    get:
+      summary: Query all OCO (USER_DATA)
+      description: |-
+        Retrieves all OCO based on provided optional parameters
+
+        Weight: 10
+      tags:
+        - Trade
+      parameters:
+        - $ref: '#/components/parameters/fromId'
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OCOOrder'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /openOrderList:
+    get:
+      summary: Query Open OCO (USER_DATA)
+      description: |-
+        Weight: 2
+      tags:
+        - Trade
+      parameters:
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OCOOrder'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /account:
+    get:
+      summary: Account Information (USER_DATA)
+      description: |-
+        Get current account information.
+
+        Weight: 5
+      tags:
+        - Trade
+      parameters:
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/account'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
 components:
   parameters:
     APIKey:
@@ -763,6 +1004,15 @@ components:
       required: true
       schema:
         type: string
+    side:
+      name: side
+      in: query
+      required: true
+      description: SELL or BUY
+      schema:
+        type: string
+        enum: ['SELL', 'BUY']
+      example: 'BNBUSDT'    
     symbol:
       name: symbol
       in: query
@@ -785,7 +1035,7 @@ components:
       schema:
         type: integer
       example: 500
-    tradeId:
+    fromId:
       name: fromId
       in: query
       description: Trade id to fetch from. Default gets most recent trades.
@@ -797,10 +1047,28 @@ components:
       description: order id
       schema:
         type: integer
+    orderListId:
+      name: orderListId
+      in: query
+      description: order list id
+      schema:
+        type: integer
     origClientOrderId:
       name: origClientOrderId
       in: query
       description: order id from client
+      schema:
+        type: string
+    listClientOrderId:
+      name: listClientOrderId
+      in: query
+      description: A unique Id for the entire orderList
+      schema:
+        type: string
+    newClientOrderId:
+      name: newClientOrderId
+      in: query
+      description: Used to uniquely identify this cancel. Automatically generated by default
       schema:
         type: string
     startTime:
@@ -839,6 +1107,50 @@ components:
 
 
   schemas:
+    account:
+      type: object
+      properties:
+        makerCommission:
+          type: integer
+          example: 15
+        takerCommission:
+          type: integer
+          example: 15
+        buyerCommission:
+          type: integer
+          example: 0
+        sellerCommission:
+          type: integer
+          example: 0
+        canTrade:
+          type: boolean
+          example: true
+        canWithdraw:
+          type: boolean
+          example: true
+        canDeposit:
+          type: boolean
+          example: true
+        updateTime:
+          type: integer
+          example: 123456789
+        accountType:
+          type: string
+          example: "SPOT"
+        balances:
+          type: array
+          items:
+            type: object
+            properties:
+              asset:
+                type: string
+                example: "BTC"
+              free:
+                type: string
+                example: "4723846.89208129"
+              locked:
+                type: string
+                example: "0.00000000"        
     order:
       type: object
       properties:
@@ -1081,7 +1393,84 @@ components:
               commissionAsset:
                 type: string
                 example: "USDT"
-
+    OCOOrder:
+      type: object
+      properties:
+        orderListId:
+          type: integer
+          example: 3159531
+        contingencyType:
+          type: string
+          example: "OCO"
+        listStatusType:
+          type: string
+          example: "ALL_DONE"
+        listOrderStatus:
+          type: string
+          example: "ALL_DONE"
+        listClientOrderId:
+          type: string
+          example: "jhaxNE9gi6rItxyh8pZsoM"
+        transactionTime:
+          type: integer
+          example: 1585261352335
+        symbol:
+          type: string
+          example: "BNBUSDT"
+        orders:
+          type: array
+          items:
+            properties:
+              symbol:
+                type: string
+                example: "BNBUSDT"
+              orderId:
+                type: integer
+                example: 392119712
+              clientOrderId:
+                type: string
+                example: "rmBDik7yMPo1YXtIIrpDGf"
+    OCOOrderReport:
+      type: object
+      properties:
+        orderListId:
+          type: integer
+          example: 3159531
+        contingencyType:
+          type: string
+          example: "OCO"
+        listStatusType:
+          type: string
+          example: "ALL_DONE"
+        listOrderStatus:
+          type: string
+          example: "ALL_DONE"
+        listClientOrderId:
+          type: string
+          example: "jhaxNE9gi6rItxyh8pZsoM"
+        transactionTime:
+          type: integer
+          example: 1585261352335
+        symbol:
+          type: string
+          example: "BNBUSDT"
+        orders:
+          type: array
+          items:
+            properties:
+              symbol:
+                type: string
+                example: "BNBUSDT"
+              orderId:
+                type: integer
+                example: 392119712
+              clientOrderId:
+                type: string
+                example: "rmBDik7yMPo1YXtIIrpDGf"
+        orderReports:
+          type: array
+          items:
+            $ref: "#/components/schemas/order"
     bookTickerList:
       type: array
       items:
