@@ -6,15 +6,17 @@ info:
   license:
     name: MIT
 servers:
-  - url: https://api.binance.com/api/v3
-  - url: https://testnet.binance.vision/api/v3
+  - url: https://api.binance.com
+  - url: https://testnet.binance.vision
 tags:
   - name: Market Data
     description: Market Data
   - name: Trade
     description: Account and Trade
+  - name: Margin
+    description: Margin Account/Trade
 paths:
-  /ping:
+  /api/v3/ping:
     get:
       summary: Test Connectivity
       description: Weight 1
@@ -24,7 +26,7 @@ paths:
         '200':
           description: ping result
           content: {}
-  /time:
+  /api/v3/time:
     get:
       summary: Check Server Time
       description: Weight 1
@@ -40,7 +42,7 @@ paths:
                 type: object
               example:
                 serverTime: 1499827319559
-  /exchangeInfo:
+  /api/v3/exchangeInfo:
     get:
       summary: Exchange Information
       description: Weight 1
@@ -122,7 +124,7 @@ paths:
                     permissions: 
                     - SPOT
                     - MARGIN
-  /depth:
+  /api/v3/depth:
     get:
       summary: Order Book
       description: Weight 1
@@ -166,7 +168,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
-  /trades:
+  /api/v3/trades:
     get:
       summary: Recent Trades List
       description: |-
@@ -198,7 +200,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'             
-  /historicalTrades:
+  /api/v3/historicalTrades:
     get:
       summary: Old Trade Lookup
       description: |-
@@ -227,7 +229,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
-  /aggTrades:
+  /api/v3/aggTrades:
       get:
         summary: Compressed/Aggregate Trades List
         description: |-
@@ -257,7 +259,7 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
-  /klines:
+  /api/v3/klines:
       get:
         summary: Kline/Candlestick Data
         description: |-
@@ -305,7 +307,7 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
-  /avgPrice:
+  /api/v3/avgPrice:
       get:
         summary: Current Average Price
         description: |-
@@ -332,7 +334,7 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
-  /ticker/24hr:
+  /api/v3/ticker/24hr:
       get:
         summary: 24hr Ticker Price Change Statistics
         description: |-
@@ -360,7 +362,7 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
-  /ticker/price:
+  /api/v3/ticker/price:
       get:
         summary: Symbol Price Ticker
         description: |-
@@ -388,7 +390,7 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
-  /ticker/bookTicker:
+  /api/v3/ticker/bookTicker:
     get:
       summary: Symbol Order Book Ticker
       description: |-
@@ -416,7 +418,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'    
-  /order/test:
+  /api/v3/order/test:
     post:
       summary: Test New Order (TRADE)
       description: |-
@@ -506,7 +508,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
-  /order:
+  /api/v3/order:
       get:
         summary: Query Order (USER_DATA)
         description: |-
@@ -661,7 +663,7 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
-  /openOrders:
+  /api/v3/openOrders:
     get:
       summary: Current Open Orders (USER_DATA)
       description: |-
@@ -721,7 +723,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'               
-  /allOrders:
+  /api/v3/allOrders:
     get:
       summary: All Orders (USER_DATA)
       description: |-
@@ -754,7 +756,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
-  /order/oco:
+  /api/v3/order/oco:
     post:
       summary: New OCO (TRADE)
       description: |-
@@ -853,7 +855,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/validationError'
 
-  /orderList:
+  /api/v3/orderList:
     get:
       summary: Query OCO (USER_DATA)
       description: |-
@@ -911,7 +913,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
-  /allOrderList:
+  /api/v3/allOrderList:
     get:
       summary: Query all OCO (USER_DATA)
       description: |-
@@ -943,7 +945,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
-  /openOrderList:
+  /api/v3/openOrderList:
     get:
       summary: Query Open OCO (USER_DATA)
       description: |-
@@ -969,7 +971,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
-  /account:
+  /api/v3/account:
     get:
       summary: Account Information (USER_DATA)
       description: |-
@@ -995,15 +997,269 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validationError'
+  /api/v3/myTrades:
+    get:
+      summary: Account Trade List (USER_DATA)
+      description: |-
+        Get trades for a specific account and symbol.
+
+        Weight: 5
+      tags:
+        - Trade
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - $ref: '#/components/parameters/fromId'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/myTrade'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+
+  /sapi/v1/margin/transfer:
+    post:
+      summary: Account Trade List (USER_DATA)
+      description: |-
+        Execute transfer between spot account and margin account.
+
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/asset'
+        - $ref: '#/components/parameters/amount'
+        - $ref: '#/components/parameters/type'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /sapi/v1/margin/loan:
+    post:
+      summary: Margin Account Borrow (MARGIN)
+      description: |-
+        Apply for a loan.
+
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/asset'
+        - $ref: '#/components/parameters/amount'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /sapi/v1/margin/repay:
+    post:
+      summary: Margin Account Repay (MARGIN)
+      description: |-
+        Repay loan for margin account.
+
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/asset'
+        - $ref: '#/components/parameters/amount'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transaction'
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /sapi/v1/margin/asset:
+    get:
+      summary: Query Margin Asset (MARKET_DATA)
+      description: |-
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/asset'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                assetFullName: "Binance Coin"
+                assetName: "BNB"
+                isBorrowable: false
+                isMortgageable: true
+                userMinBorrow: "0.00000000"
+                userMinRepay: "0.00000000"
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /sapi/v1/margin/pair:
+    get:
+      summary: Query Margin Pair (MARKET_DATA)
+      description: |-
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 323355778339572400
+                symbol: "BNBUSDT"
+                quote: "USDT"
+                isMarginTrade: true
+                isBuyAllowed: true
+                isSellAllowed: true
+        '400':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationError'
+  /sapi/v1/margin/allAssets:
+    get:
+      summary: Get All Margin Assets (MARKET_DATA)
+      description: |-
+        Weight: 1
+      tags:
+        - Margin
+      responses:
+        '200':
+          description: order details
+          content:
+            application/json:
+              schema:
+                type: array
+              example:
+                - 
+                  assetFullName: "Binance coin"
+                  assetName: "BNB"
+                  isBorrowable: true
+                  isMortgageable: true
+                  userMinBorrow: "0.00000000"
+                  userMinRepay: "0.00000000"
+  /sapi/v1/margin/allPairs:
+    get:
+      summary: Get All Margin Pairs (MARKET_DATA)
+      description: |-
+        Weight: 1
+      tags:
+        - Margin
+      responses:
+        '200':
+          description: margin pairs
+          content:
+            application/json:
+              schema:
+                type: array
+              example:
+                - 
+                  base: "BNB"
+                  id: 351637150141315861
+                  isBuyAllowed: true
+                  isMarginTrade: true
+                  isSellAllowed: true
+                  quote: "BTC"
+                  symbol: "BNBBTC"
+  /sapi/v1/margin/priceIndex:
+    get:
+      summary: Query Margin PriceIndex (MARKET_DATA)
+      description: |-
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/symbol'        
+      responses:
+        '200':
+          description: margin pairs
+          content:
+            application/json:
+              schema:
+                type: array
+              example:
+                - 
+                  base: "BNB"
+                  id: 351637150141315861
+                  isBuyAllowed: true
+                  isMarginTrade: true
+                  isSellAllowed: true
+                  quote: "BTC"
+                  symbol: "BNBBTC"
 components:
   parameters:
-    APIKey:
-      name: X-MBX-APIKEY
-      in: header
-      description: API Key
+    asset:
+      name: asset
+      in: query
+      description: The asset being transferred, e.g., BTC
       required: true
       schema:
         type: string
+      example: 'BTC'
+    amount:
+      name: amount
+      in: query
+      required: true
+      schema:
+        type: number
+        format: float
+      example: '1.01'
     side:
       name: side
       in: query
@@ -1097,6 +1353,12 @@ components:
       description: UTC timestamp
       schema:
         type: integer
+    type:
+      name: type
+      in: query
+      required: true
+      schema:
+        type: integer
     signature:
       name: signature
       in: query
@@ -1104,7 +1366,13 @@ components:
       description: signature
       schema:
         type: string
-
+    APIKey:
+      name: X-MBX-APIKEY
+      in: header
+      description: API Key
+      required: true
+      schema:
+        type: string
 
   schemas:
     account:
@@ -1572,7 +1840,60 @@ components:
           example: 55958
 
 
-
+    myTrade:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "BNBUSDT"
+        id:
+          type: integer
+          description: trade id
+          example: 345196462
+        orderId:
+          type: integer
+          example: 345196462
+        orderListId:
+          type: integer
+          example: 345196462
+        price:
+          type: string
+          description: price
+          example: "9638.99000000"
+        qty:
+          type: string
+          description: amount of base asset
+          example: "0.02077200"
+        quoteQty:
+          type: string
+          description: amount of quote asset
+          example: "0.02077200"
+        commission:
+          type: string
+          example: "0.02077200"
+        commissionAsset:
+          type: string
+          example: "BNB"
+        time:
+          type: integer
+          description: trade timestamp
+          example: 1592887772684
+        isBuyer:
+          type: boolean
+          example: true
+        isMaker:
+          type: boolean
+          example: true
+        isBestMatch:
+          type: boolean
+          example: true
+    transaction:
+      type: object
+      properties:
+        tranId:
+          type: integer
+          description: transaction id
+          example: 345196462
     trade:
       type: object
       properties:
