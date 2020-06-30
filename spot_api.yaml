@@ -15,6 +15,12 @@ tags:
     description: Account and Trade
   - name: Margin
     description: Margin Account/Trade
+  - name: Wallet
+    description: Wallet Endpoints
+  - name: Stream
+    description: User data stream
+  - name: Margin Stream
+    description: Margin user data stream
 paths:
   /api/v3/ping:
     get:
@@ -1358,6 +1364,29 @@ paths:
                   quote: "BTC"
                   symbol: "BNBBTC"
   /sapi/v1/margin/order:
+    get:
+      summary: Query Margin Account's Order (MARKET_DATA)
+      description: |-
+        - Either orderId or origClientOrderId must be sent.
+        - For some historical orders cummulativeQuoteQty will be < 0, meaning the data is not available at this time.
+
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/orderId'
+        - $ref: '#/components/parameters/origClientOrderId'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: Interest History, response in descending order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/marginOrderDetail"
     post:
       summary: Margin Account New Order (TRADE)
       description: |-
@@ -1430,7 +1459,6 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/validationError'
-
   /sapi/v1/margin/interestHistory:
     get:
       summary: Query Interest History (MARKET_DATA)
@@ -1463,7 +1491,914 @@ paths:
                     interestRate: "0.01600000"
                     principal: "36.22000000"
                     type: "ON_BORROW"
-                total: 5
+                total: 1
+  /sapi/v1/margin/forceLiquidationRec:
+    get:
+      summary: Get Force Liquidation Record (USER_DATA)
+      description: |-
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - $ref: '#/components/parameters/current'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: Force Liquidation History, response in descending order
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                rows:
+                  - 
+                    avgPrice: "0.00388359"
+                    executedQty: "31.39000000"
+                    orderId: 180015097
+                    price: "0.00388110"
+                    qty: "31.39000000"
+                    side: "SELL"
+                    symbol: "BNBBTC"
+                    timeInForce: "GTC"
+                    updatedTime: 1558941374745
+                total: 1
+  /sapi/v1/margin/account:
+    get:
+      summary: Query Margin Account Details (USER_DATA)
+      description: |-
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: Margin account details
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                borrowEnabled: true
+                marginLevel: "11.64405625"
+                totalAssetOfBtc: "6.82728457"
+                totalLiabilityOfBtc: "0.58633215"
+                totalNetAssetOfBtc: "6.24095242"
+                tradeEnabled: true
+                transferEnabled: true
+                userAssets:
+                  - 
+                    asset: "BTC"
+                    borrowed: "0.00000000"
+                    free: "0.00499500"
+                    interest: "0.00000000"
+                    locked: "0.00000000"
+                    netAsset: "0.00499500"
+  /sapi/v1/margin/openOrders:
+    get:
+      summary: Query Margin Account's Open Order (USER_DATA)
+      description: |-
+        - If the symbol is not sent, orders for all symbols will be returned in an array.
+        - When all symbols are returned, the number of requests counted against the rate limiter is equal to the number of symbols currently trading on the exchange
+
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: margin open orders list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/marginOrderDetail'
+  /sapi/v1/margin/allOrders:
+    get:
+      summary: Query Margin Account's All Order (USER_DATA)
+      description: |-
+        - If orderId is set, it will get orders >= that orderId. Otherwise most recent orders are returned.
+        - For some historical orders cummulativeQuoteQty will be < 0, meaning the data is not available at this time.
+        
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/orderId'
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: margin order list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/marginOrderDetail'
+  /sapi/v1/margin/myTrades:
+    get:
+      summary: If fromId is set, it will get orders >= that fromId. Otherwise most recent orders are returned.
+      description: |-
+        Weight: 1
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - $ref: '#/components/parameters/fromId'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: margin order list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/marginTrade'
+  /sapi/v1/margin/maxBorrowable:
+    get:
+      summary: Query Max Borrow (USER_DATA)
+      description: |-
+        Weight: 5
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: max borrow amount
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  amount: "1.69248805"
+  /sapi/v1/margin/maxTransferable:
+    get:
+      summary: Query Max Transfer-Out Amount (USER_DATA)
+      description: |-
+        Weight: 5
+      tags:
+        - Margin
+      parameters:
+        - $ref: '#/components/parameters/symbol'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: max transferable amount
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  amount: "1.69248805"
+  /wapi/v3/systemStatus.html :
+    get:
+      summary: System Status (System)
+      description: |-
+        Weight: 1
+      tags:
+        - Wallet     
+      responses:
+        '200':
+          description: system status
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  status: 0
+                  msg: "normal"
+  /sapi/v1/capital/config/getall:
+    get:
+      summary: All Coins' Information (USER_DATA)
+      description: |- 
+        Get information of coins (available for deposit and withdraw) for user.
+
+        Weight: 5
+      tags:
+        - Wallet
+      parameters:
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: All coins details information
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  coin: "BTC"
+                  depositAllEnable: true
+                  free: "0.08074558"
+                  freeze: "0.00000000"
+                  ipoable: "0.00000000"
+                  ipoing: "0.00000000"
+                  isLegalMoney: false
+                  locked: "0.00000000"
+                  name: "Bitcoin"
+                  networkList:
+                    - 
+                      addressRegex: "^(bnb1)[0-9a-z]{38}$"
+                      coin: "BTC"
+                      depositDesc: "Wallet Maintenance, Deposit Suspended"
+                      depositEnable: false
+                      isDefault: false,       
+                      memoRegex: "^[0-9A-Za-z\\-_]{1,120}$"
+                      minConfirm: 1
+                      name: "BEP2"
+                      network: "BNB"
+                      resetAddressStatus: false
+                      specialTips: "Both a MEMO and an Address are required to successfully deposit your BEP2-BTCB tokens to Binance."
+                      unLockConfirm: 0
+                      withdrawDesc: "Wallet Maintenance, Withdrawal Suspended"
+                      withdrawEnable: false
+                      withdrawFee: "0.00000220"
+                      withdrawMin: "0.00000440"
+                  storage: "0.00000000"
+                  trading: true
+                  withdrawAllEnable: true
+                  withdrawing: "0.00000000"
+  /sapi/v1/accountSnapshot:
+    get:
+      summary: Daily Account Snapshot (USER_DATA)
+      description: |- 
+        Weight: 1
+      tags:
+        - Wallet
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [SPOT, MARGIN, FUTURES]
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 5
+            minimum: 5
+            maximum: 30
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'        
+      responses:
+        '200':
+          description: account Snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  code: 200
+                  msg: ""
+                  snapshotVos:
+                    - 
+                      data:
+                        balances:
+                          -
+                            asset: "BTC"
+                            free: "0.09905021"
+                            locked: "0.00000000"
+                        totalAssetOfBtc: "100"
+                      type: "spot"
+                      updateTime: 1576281599000
+  /sapi/v1/account/disableFastWithdrawSwitch:
+    post:
+      summary: Disable Fast Withdraw Switch (USER_DATA)
+      description: |-
+        This request will disable fastwithdraw switch under your account.
+        You need to enable "trade" option for the api key which requests this endpoint.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature' 
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  {}
+  /sapi/v1/account/enableFastWithdrawSwitch:
+    post:
+      summary: Enable Fast Withdraw Switch (USER_DATA)
+      description: |-
+
+        - This request will enable fastwithdraw switch under your account. You need to enable "trade" option for the api key which requests this endpoint.
+        - When Fast Withdraw Switch is on, transferring funds to a Binance account will be done instantly. There is no on-chain transaction, no transaction ID and no withdrawal fee.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature' 
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  {}
+  /sapi/v1/capital/withdraw/apply:
+    post:
+      summary: Withdraw
+      description: |-
+        Submit a withdraw request.
+
+        - If network not send, return with default network of the coin.
+        - You can get network and isDefault in networkList of a coin in the response of `Get /sapi/v1/capital/config/getall (HMAC SHA256)`.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/coin'
+        - name: withdrawOrderId
+          in: query
+          schema:
+            type: string
+        - name: network
+          in: query
+          schema:
+            type: string
+        - name: address
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: addressTag
+          in: query
+          schema:
+            type: string
+        - name: amount
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+        - name: transactionFeeFlag
+          in: query
+          schema:
+            type: boolean
+        - name: name
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature' 
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: "7213fea8e94b4a5593d507237e5a555b"
+  /sapi/v1/capital/deposit/hisrec:
+    get:
+      summary: Deposit History（supporting network） (USER_DATA)
+      description: |-
+        Fetch deposit history.
+
+        - Please notice the default startTime and endTime to make sure that time interval is within 0-90 days.
+        - If both startTime and endTime are sent, time between startTime and endTime must be less than 90 days.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - name: coin
+          in: query
+          schema:
+            type: string
+            example: "BNB"
+        - name: status
+          in: query
+          description: 0 -> pending, 6 -> credited but cannot withdraw, 1 -> success
+          schema:
+            type: integer
+            enum: [0, 6, 1]
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  -
+                    address": "0xddc66e4313fd6c737b6cae67cad90bb4e0ac7092"
+                    addressTag": ""
+                    amount": "139.04370000"
+                    coin": "USDT"
+                    insertTime": 1566791463000
+                    network": "ETH"
+                    status": 1
+                    txId": "0x5759dfe9983a4c7619bce9bc736bb6c26f804091753bf66fa91e7cd5cfeebafd"
+  /sapi/v1/capital/withdraw/history:
+    get:
+      summary: Withdraw History (supporting network) (USER_DATA)
+      description: |-
+        Fetch withdraw history.
+
+        - network may not be in the response for old withdraw.
+        - Please notice the default startTime and endTime to make sure that time interval is within 0-90 days.
+        - If both startTime and endTime are sent, time between startTime and endTime must be less than 90 days
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - name: coin
+          in: query
+          schema:
+            type: string
+            example: "BNB"
+        - name: status
+          in: query
+          description: |-
+            0:Email Sent
+            1:Cancelled
+            2:Awaiting Approval 
+            3:Rejected 
+            4:Processing 
+            5:Failure 
+            6:Completed
+          schema:
+            type: integer
+            enum: [0,1,2,3,4,5,6]
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  -
+                    address: "1FZdVHtiBqMrWdjPyRPULCUceZPJ2WLCsB"
+                    amount: "0.00150000"
+                    applyTime: "2019-09-24 12:43:45"
+                    coin: "BTC"
+                    id: "156ec387f49b41df8724fa744fa82719"
+                    network: "BTC"
+                    status: 6
+                    txId: "60fd9007ebfddc753455f95fafa808c4302c836e4d1eebc5a132c36c1d8ac354"
+  /sapi/v1/capital/deposit/address:
+    get:
+      summary: Withdraw History (supporting network) (USER_DATA)
+      description: |-
+        Fetch withdraw history.
+
+        - network may not be in the response for old withdraw.
+        - Please notice the default startTime and endTime to make sure that time interval is within 0-90 days.
+        - If both startTime and endTime are sent, time between startTime and endTime must be less than 90 days
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/coin'
+        - name: network
+          in: query
+          schema:
+            type: string
+            example: "ETH"
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: "deposit address"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  -
+                    address: "1FZdVHtiBqMrWdjPyRPULCUceZPJ2WLCsB"
+                    coin: "BTC"
+                    tag: ""
+                    url: "https://btc.com/1HPn8Rx2y6nNSfagQBKy27GB99Vbzg89wv"
+  /wapi/v3/accountStatus.html:
+    get:
+      summary: Account Status (USER_DATA)
+      description: |-
+        Fetch account status detail.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: "account status"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  msg: "Normal"
+                  success: true
+  /wapi/v3/apiTradingStatus.html:
+    get:
+      summary: Account API Trading Status (USER_DATA)
+      description: |-
+        Fetch account api trading status detail.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: "API trading staus details"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  status:
+                    isLocked: false
+                    plannedRecoverTime: 0
+                    triggerCondition:
+                      gcr: 150
+                      ifer: 150
+                      ufr: 300
+                    indicators:
+                  updateTime: 1593500803840
+  /wapi/v3/userAssetDribbletLog.html:
+    get:
+      summary: DustLog (USER_DATA)
+      description: |-
+        Fetch small amounts of assets exchanged BNB records.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: "Dust log records"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  results:
+                    total: 2
+                    rows: 
+                      - 
+                        transfered_total: "0.00132256"
+                        service_charge_total: "0.00002699"
+                        tran_id: 4359321
+                        logs:
+                          - 
+                            tranId: 4359321
+                            serviceChargeAmount: "0.000009"
+                            uid: "10000015"
+                            amount: "0.0009"
+                            operateTime: "2018-05-03 17:07:04"
+                            transferedAmount: "0.000441"
+                            fromAsset: "USDT"
+                        operate_time: "2018-05-03 17:07:04"
+  /sapi/v1/asset/dust:
+    post:
+      summary: Dust Transfer
+      description: |-
+        Convert dust assets to BNB.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - name: asset
+          in: query
+          required: true
+          description: The asset being converted. For example, asset=BTC&asset=USDT
+          schema:
+            type: string
+            example: asset=BTC&asset=USDT
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: "Dust log records"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  totalServiceCharge: "0.02102542"
+                  totalTransfered: "1.05127099"
+                  transferResult:
+                    - 
+                      amount: "0.03000000"
+                      fromAsset: "ETH"
+                      operateTime: 1563368549307
+                      serviceChargeAmount: "0.00500000"
+                      tranId: 2970932918
+                      transferedAmount: "0.25000000"
+  /sapi/v1/asset/assetDividend:
+    get:
+      summary: Dust Transfer
+      description: |-
+        Asset Dividend Record 
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - name: asset
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/startTime'
+        - $ref: '#/components/parameters/endTime'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: "records of asset devidend"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  rows:
+                    -
+                      amount: "10.00000000"
+                      asset: "BHFT"
+                      divTime: 1563189166000
+                      enInfo: "BHFT distribution"
+                      tranId: 2968885920
+                  total: 1
+  /wapi/v3/assetDetail.html:
+    get:
+      summary: Asset Detail (USER_DATA)
+      description: |-
+        Fetch details of assets supported on Binance.
+
+        Please get network and other deposit or withdraw details from `GET /sapi/v1/capital/config/getall`.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: "asset details"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  assetDetail:
+                    CTR:
+                      minWithdrawAmount: "0.02000000"
+                      depositStatus: true
+                      withdrawFee: 0.01
+                      withdrawStatus: true
+  /wapi/v3/tradeFee.html:
+    get:
+      summary: Trade Fee (USER_DATA)
+      description: |-
+        Fetch trade fee, values in percentage.
+
+        Weight: 1
+      tags:
+        - Wallet     
+      parameters:
+        - $ref: '#/components/parameters/optionalSymbol'
+        - $ref: '#/components/parameters/timestamp'
+        - $ref: '#/components/parameters/recvWindow'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: "Trading fee"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  tradeFee: 
+                    -
+                      symbol: "ADABNB"
+                      maker: 0.9000
+                      taker: 1.0000
+  /api/v3/userDataStream:
+    post:
+      summary: Create a ListenKey (USER_STREAM)
+      description: |-
+        Start a new user data stream. 
+        The stream will close after 60 minutes unless a keepalive is sent. If the account has an active listenKey, that listenKey will be returned and its validity will be extended for 60 minutes.
+        Weight: 1
+      tags:
+        - Stream
+      responses:
+        '200':
+          description: listen key
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  listenKey: "pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"
+    put:
+      summary: Ping/Keep-alive a ListenKey (USER_STREAM)
+      description: |-
+        Keepalive a user data stream to prevent a time out. User data streams will close after 60 minutes. It's recommended to send a ping about every 30 minutes.
+        Weight: 1
+      tags:
+        - Stream
+      parameters:
+        - $ref: '#/components/parameters/listenKey'
+      responses:
+        '200':
+          description: empty object
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  {}
+        '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+    delete:
+      summary: Close a ListenKey (USER_STREAM)
+      description: |-
+        Close out a user data stream.
+        Weight: 1
+      tags:
+        - Stream
+      parameters:
+        - $ref: '#/components/parameters/listenKey'
+      responses:
+        '200':
+          description: empty object
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  {}
+        '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+  /sapi/v1/userDataStream:
+    post:
+      summary: Create a ListenKey (USER_STREAM)
+      description: |-
+        Start a new user data stream. 
+        The stream will close after 60 minutes unless a keepalive is sent. If the account has an active listenKey, that listenKey will be returned and its validity will be extended for 60 minutes.
+        Weight: 1
+      tags:
+        - Margin Stream
+      responses:
+        '200':
+          description: listen key
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  listenKey: "pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"
+    put:
+      summary: Ping/Keep-alive a ListenKey (USER_STREAM)
+      description: |-
+        Keepalive a user data stream to prevent a time out. User data streams will close after 60 minutes. It's recommended to send a ping about every 30 minutes.
+        Weight: 1
+      tags:
+       - Margin Stream
+      parameters:
+        - $ref: '#/components/parameters/listenKey'
+      responses:
+        '200':
+          description: empty object
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  {}
+        '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+    delete:
+      summary: Close a ListenKey (USER_STREAM)
+      description: |-
+        Close out a user data stream.
+        Weight: 1
+      tags:
+        - Margin Stream
+      parameters:
+        - $ref: '#/components/parameters/listenKey'
+      responses:
+        '200':
+          description: empty object
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  {}
+        '400':
+            description: validation error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/validationError'
+                
 components:
   parameters:
     asset:
@@ -1485,11 +2420,20 @@ components:
     current:
       name: current
       in: query
+      required: true
       description: Currently querying page. Start from 1. Default:1
       schema:
         type: number
         format: int32
       example: 1
+    coin:
+      name: coin
+      in: query
+      required: true
+      description: coin name
+      schema:
+        type: string
+      example: "BNB"
     side:
       name: side
       in: query
@@ -1536,10 +2480,22 @@ components:
       schema:
         type: integer
       example: 500
+    listenKey:
+      name: listenKey
+      in: query
+      description: User websocket listen key
+      schema:
+        type: string
+      example: "pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"
     fromId:
       name: fromId
       in: query
       description: Trade id to fetch from. Default gets most recent trades.
+      schema:
+        type: integer
+    offset:
+      name: offset
+      in: query
       schema:
         type: integer
     orderId:
@@ -1582,13 +2538,13 @@ components:
     startTime:
       name: startTime
       in: query
-      description: Timestamp in ms to get aggregate trades from INCLUSIVE.
+      description: Timestamp in ms 
       schema:
         type: integer
     endTime:
       name: endTime
       in: query
-      description: Timestamp in ms to get aggregate trades until INCLUSIVE.
+      description: Timestamp in ms
       schema:
         type: integer
     price:
@@ -1862,6 +2818,57 @@ components:
         side:
           type: string
           example: "SELL"
+    marginOrderDetail:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: "BNBBTC"
+        orderId:
+          type: integer
+          example: 28
+        clientOrderId:
+          type: string
+          example: "6gCrw2kRUAF9CvJDGP16IP"
+        price:
+          type: string
+          example: "1.00000000"
+        origQty:
+          type: string
+          example: "10.00000000"
+        executedQty:
+          type: string
+          example: "10.00000000"
+        cummulativeQuoteQty:
+          type: string
+          example: "10.00000000"
+        status:
+          type: string
+          example: "CANCELED"
+        stopPrice:
+          type: string
+          example: "1.00000000"
+        time:
+          type: integer
+          example: 1562133008725
+        timeInForce:
+          type: string
+          example: "GTC"
+        type:
+          type: string
+          example: "LIMIT"
+        side:
+          type: string
+          example: "SELL"
+        icebergQty:
+          type: string
+          example: "0.00000000"
+        isWorking:
+          type: boolean
+          example: true
+        updateTime:
+          type: integer
+          example: 1562133008725
     marginOrderResponseAck:
       type: object
       properties:
@@ -1987,6 +2994,42 @@ components:
               commissionAsset:
                 type: string
                 example: "USDT"
+    marginTrade:
+      type: object
+      properties:
+        commission:
+          type: string
+          example: "0.00006000"
+        commissionAsset:
+          type: string
+          example: "BTC"
+        id:
+          type: integer
+          example: 28
+        isBestMatch:
+          type: boolean
+          example: true
+        isBuyer:
+          type: boolean
+          example: true
+        isMaker:
+          type: boolean
+          example: true
+        orderId:
+          type: integer
+          example: 28
+        price:
+          type: string
+          example: "0.02000000"
+        qty:
+          type: string
+          example: "1.02000000"
+        symbol:
+          type: string
+          example: "BNBBTC"
+        time:
+          type: integer
+          example: 1507725176595
     orderResponseAck:
       type: object
       properties:
