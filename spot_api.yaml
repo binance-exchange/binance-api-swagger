@@ -1,7 +1,12 @@
 openapi: '3.0.2'
 info:
   title: Binance SPOT Public API
-  description: The swagger file of Binance Public API
+  description: |-
+    The swagger file of Binance Public API
+
+    API documents:
+      - [https://github.com/binance-exchange/binance-official-api-docs](https://github.com/binance-exchange/binance-official-api-docs)
+      - [https://binance-docs.github.io/apidocs/spot/en](https://binance-docs.github.io/apidocs/spot/en)
   version: '1.0'
   license:
     name: MIT
@@ -25,17 +30,26 @@ paths:
   /api/v3/ping:
     get:
       summary: Test Connectivity
-      description: Weight 1
+      description: |-
+        Test connectivity to the Rest API.
+
+        Weight 1
       tags:
         - Market Data
       responses:
         '200':
           description: ping result
-          content: {}
+          content: 
+            application/json:
+              example:
+                {}
   /api/v3/time:
     get:
       summary: Check Server Time
-      description: Weight 1
+      description: |-
+        Test connectivity to the Rest API and get the current server time.
+
+        Weight 1
       tags:
         - Market Data
       responses:
@@ -44,14 +58,18 @@ paths:
           content:
             application/json:
               schema:
-                title: server time
                 type: object
-              example:
-                serverTime: 1499827319559
+                properties:
+                  serverTime:
+                    type: integer
+                    example: 1499827319559
   /api/v3/exchangeInfo:
     get:
       summary: Exchange Information
-      description: Weight 1
+      description: |-
+        Current exchange trading rules and symbol information
+
+        Weight 1
       tags:
         - Market Data
       responses:
@@ -60,89 +78,128 @@ paths:
           content:
             application/json:
               schema:
-                title: server time
                 type: object
-              example:
-                timezone: UTC
-                serverTime: 1592882214236
-                rateLimits:
-                  - rateLimitType: REQUEST_WEIGHT
-                    interval: MINUTE
-                    intervalNum: 1
-                    limit: 1200
-                  - rateLimitType: ORDERS
-                    interval: SECOND
-                    intervalNum: 10
-                    limit: 100
-                  - rateLimitType: ORDERS
-                    interval: DAY
-                    intervalNum: 1
-                    limit: 200000
-                exchangeFilters: []
-                symbols: 
-                  - symbol: ETHBTC
-                    status: TRADING
-                    baseAsset: ETH
-                    baseAssetPrecision: 8
-                    quoteAsset: BTC
-                    quotePrecision: 8
-                    quoteAssetPrecision: 8
-                    baseCommissionPrecision: 8
-                    quoteCommissionPrecision: 8
-                    orderTypes: 
-                    - LIMIT
-                    - LIMIT_MAKER
-                    - MARKET
-                    - STOP_LOSS_LIMIT
-                    - TAKE_PROFIT_LIMIT
-                    icebergAllowed: true
-                    ocoAllowed: true
-                    quoteOrderQtyMarketAllowed: true
-                    isSpotTradingAllowed: true
-                    isMarginTradingAllowed: true
-                    filters: 
-                    - filterType: PRICE_FILTER
-                      minPrice: "0.00000100"
-                      maxPrice: "100000.00000000"
-                      tickSize: "0.00000100"
-                    - filterType: PERCENT_PRICE
-                      multiplierUp: 5
-                      multiplierDown: "0.2"
-                      avgPriceMins: 5
-                    - filterType: LOT_SIZE
-                      minQty: "0.00100000"
-                      maxQty: "100000.00000000"
-                      stepSize: "0.00100000"
-                    - filterType: MIN_NOTIONAL
-                      minNotional: "0.00010000"
-                      applyToMarket: true
-                      avgPriceMins: 5
-                    - filterType: ICEBERG_PARTS
-                      limit: 10
-                    - filterType: MARKET_LOT_SIZE
-                      minQty: "0.00000000"
-                      maxQty: "10837.63823875"
-                      stepSize: "0.00000000"
-                    - filterType: MAX_NUM_ALGO_ORDERS
-                      maxNumAlgoOrders: 5
-                    - filterType: MAX_NUM_ORDERS
-                      maxNumOrders: 200
-                    permissions: 
-                    - SPOT
-                    - MARGIN
+                properties:
+                  timezone:
+                    type: string
+                    example: UTC
+                  serverTime:
+                    type: integer
+                    example: 1592882214236
+                  rateLimits:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rateLimitType:
+                          type: string
+                          example: "REQUEST_WEIGHT"
+                        interval:
+                          type: string
+                          example: "MINUTE"
+                        intervalNum:
+                          type: integer
+                          example: 1  
+                        limit:
+                          type: integer
+                          example: 1200
+                  exchangeFilters:
+                    type: array
+                    items:
+                      type: object
+                  symbols:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        symbol:
+                          type: string
+                          example: "ETHBTC"
+                        status:
+                          type: string
+                          example: "TRADING"
+                        baseAsset:
+                          type: string
+                          example: "ETH"     
+                        baseAssetPrecision:
+                          type: integer
+                          example: 8     
+                        quoteAsset:
+                          type: string
+                          example: "BTC"     
+                        quoteAssetPrecision:
+                          type: integer
+                          example: 8   
+                        baseCommissionPrecision:
+                          type: integer
+                          example: 8 
+                        quoteCommissionPrecision:
+                          type: integer
+                          example: 8
+                        orderTypes:
+                          type: array
+                          items:
+                            type: string
+                            example: "LIMIT"
+                        icebergAllowed:
+                          type: boolean
+                          example: true
+                        ocoAllowed:
+                          type: boolean
+                          example: true
+                        quoteOrderQtyMarketAllowed:
+                          type: boolean
+                          example: true
+                        isSpotTradingAllowed:
+                          type: boolean
+                          example: true
+                        isMarginTradingAllowed:
+                          type: boolean
+                          example: true
+                        filters:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              filterType:
+                                type: string
+                                example: "PRICE_FILTER"
+                              minPrice:   
+                                type: string
+                                example: "0.00000100"
+                              maxPrice:   
+                                type: string
+                                example: "100000.00000000"
+                              tickSize:   
+                                type: string
+                                example: "0.00000100"
+                        permissions:
+                          type: array
+                          items:
+                            type: string
+                            example: "SPOT"
   /api/v3/depth:
     get:
       summary: Order Book
-      description: Weight 1
+      description: |-
+        
+        | Limit               | Weight  | 
+        | -------------       |---------| 
+        | 5, 10, 20, 50, 100  | 1       | 
+        | 500                 | 5       | 
+        | 1000                | 10      | 
+        | 5000                | 50      | 
       tags:
         - Market Data
       parameters:
         - $ref: '#/components/parameters/symbol'
         - name: limit
           in: query
-          description: Default 100; max 1000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
           schema:
             type: integer
+            default: 100
+            maximum: 5000
+            enum: [5, 10, 20, 50, 100, 500, 1000, 5000]
           example: 100         
       responses:
         '200':
@@ -150,8 +207,28 @@ paths:
           content:
             application/json:
               schema:
-                title: open orders
                 type: object
+                properties:
+                  lastUpdateId:
+                    type: integer
+                    example: 1060776800
+                  bids:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                          type: array
+                          items:
+                            type: string
+                  asks:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                          type: array
+                          items:
+                            type: string          
+
               example:
                 lastUpdateId: 1060776800
                 bids: 
@@ -169,11 +246,11 @@ paths:
                   -  "16.39800000"
                   -  "5.57000000"
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /api/v3/trades:
     get:
       summary: Recent Trades List
@@ -187,9 +264,10 @@ paths:
         - $ref: '#/components/parameters/symbol'
         - name: limit
           in: query
-          description: Default 100; max 1000. Valid limits:[5, 10, 20, 50, 100, 500, 1000, 5000]
           schema:
             type: integer
+            default: 500
+            maximum: 1000
           example: 100        
       responses:
         '200':
@@ -201,22 +279,25 @@ paths:
                 items:
                   $ref: '#/components/schemas/trade'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'             
+                $ref: '#/components/schemas/error'             
   /api/v3/historicalTrades:
     get:
       summary: Old Trade Lookup
       description: |-
         Get older market trades.
+
+        `X-MBX-APIKEY` required in header
         
         Weight 5
       tags:
         - Market Data
-      parameters:          
-        - $ref: '#/components/parameters/APIKey'
+      security:
+        - apiKey: []
+      parameters: 
         - $ref: '#/components/parameters/symbol'
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/fromId'
@@ -230,11 +311,17 @@ paths:
                 items:
                   $ref: '#/components/schemas/trade'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /api/v3/aggTrades:
       get:
         summary: Compressed/Aggregate Trades List
@@ -260,11 +347,11 @@ paths:
                   items:
                     $ref: '#/components/schemas/aggTrade'
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
   /api/v3/klines:
       get:
         summary: Kline/Candlestick Data
@@ -279,10 +366,11 @@ paths:
           - $ref: '#/components/parameters/symbol'
           - name: interval
             in: query
+            required: true
             description: kline intervals
             schema:
               type: string
-            example: '1m'
+              enum: [1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M]
           - $ref: '#/components/parameters/startTime'
           - $ref: '#/components/parameters/endTime'
           - $ref: '#/components/parameters/limit'
@@ -308,11 +396,11 @@ paths:
                     - "101138.68313192"
                     - "0"
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
   /api/v3/avgPrice:
       get:
         summary: Current Average Price
@@ -330,16 +418,20 @@ paths:
             content:
               application/json:
                 schema:
-                  type: array
-                example:
-                  mins: 5
-                  price: "9.35751834"
+                  type: object
+                  properties:
+                    mins:
+                      type: integer
+                      example: 5
+                    price:
+                      type: string
+                      example: "9.35751834"
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
   /api/v3/ticker/24hr:
       get:
         summary: 24hr Ticker Price Change Statistics
@@ -347,8 +439,8 @@ paths:
           24 hour rolling window price change statistics. Careful when accessing this with no symbol.
 
           Weight:\
-          1 for a single symbol;\
-          40 when the symbol parameter is omitted
+          `1` for a single symbol;\
+          `40` when the symbol parameter is omitted
         tags:
           - Market Data
         parameters:
@@ -363,11 +455,11 @@ paths:
                     - $ref: '#/components/schemas/ticker'
                     - $ref: '#/components/schemas/tickerList'
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
   /api/v3/ticker/price:
       get:
         summary: Symbol Price Ticker
@@ -375,8 +467,8 @@ paths:
           Latest price for a symbol or symbols.
 
           Weight:\
-          1 for a single symbol;\
-          2 when the symbol parameter is omitted
+          `1` for a single symbol;\
+          `2` when the symbol parameter is omitted
         tags:
           - Market Data
         parameters:
@@ -391,11 +483,11 @@ paths:
                     - $ref: '#/components/schemas/priceTicker'
                     - $ref: '#/components/schemas/priceTickerList'
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
   /api/v3/ticker/bookTicker:
     get:
       summary: Symbol Order Book Ticker
@@ -419,11 +511,11 @@ paths:
                   - $ref: '#/components/schemas/bookTicker'
                   - $ref: '#/components/schemas/bookTickerList'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'    
+                $ref: '#/components/schemas/error'    
   /api/v3/order/test:
     post:
       summary: Test New Order (TRADE)
@@ -431,20 +523,14 @@ paths:
         Test new order creation and signature/recvWindow long. 
         Creates and validates a new order but does not send it into the matching engine.
 
-        Weight:\
-        1 
+        Weight: 1
       tags:
         - Trade
       parameters:
         - $ref: '#/components/parameters/symbol'
         - $ref: '#/components/parameters/side'
         - $ref: '#/components/parameters/orderType'
-        - name: timeInForce
-          in: query
-          description: GTC, IOC or FOK
-          schema:
-            type: string
-            enum: [GTC, IOC, FOK]
+        - $ref: '#/components/parameters/timeInForce'
         - name: quantity
           in: query
           description: order quantity
@@ -457,52 +543,37 @@ paths:
           schema:
             type: number
             format: float
-        - name: price
-          in: query
-          description: order price
-          schema:
-            type: number
-            format: float
-        - name: newClientOrderId
-          in: query
-          description: order id by client
-          schema:
-            type: string
-        - name: stopPrice
-          in: query
-          description: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
-          schema:
-            type: number
-            format: float
+        - $ref: '#/components/parameters/price'
+        - $ref: '#/components/parameters/newClientOrderId'
+        - $ref: '#/components/parameters/stopPrice'
         - name: icebergQty
           in: query
           description: Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
           schema:
             type: number
             format: float
-        - name: newOrderRespType
-          in: query
-          description: ACK, RESULT, or FULL
-          schema:
-            type: string
-        - name: recvWindow
-          in: query
-          description: The value cannot be greater than 60000
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/newOrderRespType'
         - $ref: '#/components/parameters/recvWindow'
         - $ref: '#/components/parameters/timestamp'
         - $ref: '#/components/parameters/signature'
+      security:
+        - apiKey: []
       responses:
         '200':
           description: test order result
           content: {}
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /api/v3/order:
       get:
         summary: Query Order (USER_DATA)
@@ -527,11 +598,11 @@ paths:
                 schema:
                   $ref: '#/components/schemas/orderDetails'
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
       post:
         summary: New Order (TRADE)
         description: |-
@@ -620,11 +691,11 @@ paths:
                     - $ref: '#/components/schemas/orderResponseResult'
                     - $ref: '#/components/schemas/orderResponseFull'
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError' 
+                  $ref: '#/components/schemas/error' 
       delete:
         summary: Cancel Order (TRADE)
         description: |-
@@ -649,11 +720,11 @@ paths:
                 schema:
                   $ref: '#/components/schemas/order'
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
   /api/v3/openOrders:
     get:
       summary: Current Open Orders (USER_DATA)
@@ -680,11 +751,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/orderDetails'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
     delete:
       summary: Cancel all Open Orders on a Symbol (TRADE)
       description: |-
@@ -709,11 +780,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/order'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'               
+                $ref: '#/components/schemas/error'               
   /api/v3/allOrders:
     get:
       summary: All Orders (USER_DATA)
@@ -742,11 +813,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/orderDetails'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /api/v3/order/oco:
     post:
       summary: New OCO (TRADE)
@@ -840,11 +911,11 @@ paths:
           description: test order result
           content: {}
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
 
   /api/v3/orderList:
     get:
@@ -869,11 +940,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/OCOOrder'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
     delete:
       summary: Cancel OCO (TRADE)
       description: |-
@@ -899,11 +970,11 @@ paths:
                 type: object
                 $ref: '#/components/schemas/OCOOrderReport'               
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /api/v3/allOrderList:
     get:
       summary: Query all OCO (USER_DATA)
@@ -931,11 +1002,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/OCOOrder'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /api/v3/openOrderList:
     get:
       summary: Query Open OCO (USER_DATA)
@@ -957,11 +1028,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/OCOOrder'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /api/v3/account:
     get:
       summary: Account Information (USER_DATA)
@@ -983,11 +1054,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/account'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /api/v3/myTrades:
     get:
       summary: Account Trade List (USER_DATA)
@@ -1014,11 +1085,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/myTrade'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
 
   /sapi/v1/margin/transfer:
     post:
@@ -1044,11 +1115,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/transaction'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
     get:
       summary: Get Transfer History (USER_DATA)
       description: |-
@@ -1090,11 +1161,11 @@ paths:
                   total: 1
                       
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /sapi/v1/margin/loan:
     post:
       summary: Margin Account Borrow (MARGIN)
@@ -1118,11 +1189,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/transaction'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
     get:
       summary: Query Load Record (USER_DATA)
       description: |-
@@ -1160,11 +1231,11 @@ paths:
                       status: "CONFIRMED"
                   total: 1
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /sapi/v1/margin/repay:
     post:
       summary: Margin Account Repay (MARGIN)
@@ -1188,11 +1259,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/transaction'
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
     get:
       summary: Query Repay Record (USER_DATA)
       description: |-
@@ -1230,11 +1301,11 @@ paths:
                       status: "CONFIRMED"
                   total: 1
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError' 
+                $ref: '#/components/schemas/error' 
   /sapi/v1/margin/asset:
     get:
       summary: Query Margin Asset (MARKET_DATA)
@@ -1259,11 +1330,11 @@ paths:
                 userMinBorrow: "0.00000000"
                 userMinRepay: "0.00000000"
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /sapi/v1/margin/pair:
     get:
       summary: Query Margin Pair (MARKET_DATA)
@@ -1288,11 +1359,11 @@ paths:
                 isBuyAllowed: true
                 isSellAllowed: true
         '400':
-          description: validation error
+          description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/validationError'
+                $ref: '#/components/schemas/error'
   /sapi/v1/margin/allAssets:
     get:
       summary: Get All Margin Assets (MARKET_DATA)
@@ -1454,11 +1525,11 @@ paths:
                 schema:
                   $ref: '#/components/schemas/marginOrder'
           '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
   /sapi/v1/margin/interestHistory:
     get:
       summary: Query Interest History (MARKET_DATA)
@@ -2303,11 +2374,11 @@ paths:
                 example:
                   {}
         '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
     delete:
       summary: Close a ListenKey (USER_STREAM)
       description: |-
@@ -2327,11 +2398,11 @@ paths:
                 example:
                   {}
         '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
   /sapi/v1/userDataStream:
     post:
       summary: Create a ListenKey (USER_STREAM)
@@ -2369,11 +2440,11 @@ paths:
                 example:
                   {}
         '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
     delete:
       summary: Close a ListenKey (USER_STREAM)
       description: |-
@@ -2393,11 +2464,11 @@ paths:
                 example:
                   {}
         '400':
-            description: validation error
+            description: Bad Request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/validationError'
+                  $ref: '#/components/schemas/error'
                 
 components:
   parameters:
@@ -2529,7 +2600,7 @@ components:
       schema:
         type: string
     newOrderRespType:
-      name: newClientOrderId
+      name: newOrderRespType
       in: query
       description: Set the response JSON. ACK, RESULT, or FULL; MARKET and LIMIT order types default to FULL, all other orders default to ACK.
       schema:
@@ -3458,14 +3529,19 @@ components:
           description: Was the trade the best price match?
           example: true
     
-    validationError:
+    error:
       type: object
       properties:
         code:
           type: integer
           description: error code
-          example: -1102
         msg:
           type: string
           description: error message
-          example: "Mandatory parameter %s was not sent, was empty/null, or malformed."
+          example: "error message"
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      description: Binance Public API Key
+      name: X-MBX-APIKEY
+      in: header
