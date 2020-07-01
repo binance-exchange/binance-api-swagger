@@ -580,6 +580,9 @@ paths:
         description: |-
           Check an order's status.
 
+          - Either `orderId` or `origClientOrderId` must be sent.
+          - For some historical orders `cummulativeQuoteQty` will be < 0, meaning the data is not available at this time.
+
           Weight: 1 
         tags:
           - Trade
@@ -603,35 +606,41 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/error'
+          '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'
       post:
         summary: New Order (TRADE)
         description: |-
           Send in a new order.
+
+
+          - `LIMIT_MAKER` are `LIMIT` orders that will be rejected if they would immediately match and trade as a taker.
+          - `STOP_LOSS` and `TAKE_PROFIT` will execute a `MARKET` order when the `stopPrice` is reached.
+          - Any `LIMIT` or `LIMIT_MAKER` type order can be made an iceberg order by sending an `icebergQty`.
+          - Any order with an `icebergQty` MUST have `timeInForce` set to `GTC`.
+          - `MARKET` orders using `quantity` specifies how much a user wants to buy or sell based on the market price.
+          - `MARKET` orders using `quoteOrderQty` specifies the amount the user wants to spend (when buying) or receive (when selling) of the quote asset; the correct quantity will be determined based on the market liquidity and `quoteOrderQty`.
+          - `MARKET` orders using `quoteOrderQty` will not break `LOT_SIZE` filter rules; the order will execute a quantity that will have the notional value as close as possible to `quoteOrderQty`.
+          - same `newClientOrderId` can be accepted only when the previous one is filled, otherwise the order will be rejected.
+
+          Trigger order price rules against market price for both `MARKET` and `LIMIT` versions:
+
+          - Price above market price: STOP_LOSS BUY, TAKE_PROFIT SELL
+          - Price below market price: STOP_LOSS SELL, TAKE_PROFIT BUY
+
 
           Weight: 1 
         tags:
           - Trade
         parameters:
           - $ref: '#/components/parameters/symbol'
-          - name: side
-            in: query
-            required: true
-            description: BUY or SELL
-            schema:
-              type: string
-          - name: type
-            in: query
-            required: true
-            description: LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER etc
-            schema:
-              type: string
-              enum: [LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER]
-          - name: timeInForce
-            in: query
-            description: GTC, IOC or FOK
-            schema:
-              type: string
-              enum: [GTC, IOC, FOK]
+          - $ref: '#/components/parameters/side'
+          - $ref: '#/components/parameters/orderType'
+          - $ref: '#/components/parameters/timeInForce'
           - name: quantity
             in: query
             description: order quantity
@@ -644,42 +653,21 @@ paths:
             schema:
               type: number
               format: float
-          - name: price
-            in: query
-            description: order price
-            schema:
-              type: number
-              format: float
-          - name: newClientOrderId
-            in: query
-            description: order id by client
-            schema:
-              type: string
-          - name: stopPrice
-            in: query
-            description: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
-            schema:
-              type: number
-              format: float
+          - $ref: '#/components/parameters/price'
+          - $ref: '#/components/parameters/newClientOrderId'
+          - $ref: '#/components/parameters/stopPrice'
           - name: icebergQty
             in: query
             description: Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
             schema:
               type: number
               format: float
-          - name: newOrderRespType
-            in: query
-            description: ACK, RESULT, or FULL
-            schema:
-              type: string
-          - name: recvWindow
-            in: query
-            description: The value cannot be greater than 60000
-            schema:
-              type: integer
+          - $ref: '#/components/parameters/newOrderRespType'
           - $ref: '#/components/parameters/recvWindow'
           - $ref: '#/components/parameters/timestamp'
           - $ref: '#/components/parameters/signature'
+        security:
+          - apiKey: []
         responses:
           '200':
             description: order result
@@ -696,10 +684,18 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/error' 
+          '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'
       delete:
         summary: Cancel Order (TRADE)
         description: |-
           Cancel an active order.
+
+          Either `orderId` or `origClientOrderId` must be sent.
 
           Weight: 1 
         tags:
@@ -725,6 +721,12 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/error'
+          '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'
   /api/v3/openOrders:
     get:
       summary: Current Open Orders (USER_DATA)
@@ -732,8 +734,8 @@ paths:
         Get all open orders on a symbol. Careful when accessing this with no symbol.\
         
         Weight:\
-        1 for a single symbol;\
-        40 when the symbol parameter is omitted
+        `1` for a single symbol;\
+        `40` when the symbol parameter is omitted
       tags:
         - Trade
       parameters:
@@ -756,6 +758,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'
     delete:
       summary: Cancel all Open Orders on a Symbol (TRADE)
       description: |-
@@ -785,12 +793,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'               
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'
   /api/v3/allOrders:
     get:
       summary: All Orders (USER_DATA)
       description: |-
-        Get all account orders; active, canceled, or filled..\
+        Get all account orders; active, canceled, or filled..
         
+        - If orderId is set, it will get orders >= that orderId. Otherwise most recent orders are returned.
+        - For some historical orders cummulativeQuoteQty will be < 0, meaning the data is not available at this time.
+
         Weight: 5
       tags:
         - Trade
@@ -818,112 +835,186 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'
   /api/v3/order/oco:
     post:
       summary: New OCO (TRADE)
       description: |-
         Send in a new OCO
 
-        Weight:\
-        1 
+        - Price Restrictions:
+          - SELL: Limit Price > Last Price > Stop Price
+          - BUY: Limit Price < Last Price < Stop Price
+        - Quantity Restrictions:
+            - Both legs must have the same quantity
+            - ICEBERG quantities however do not have to be the same
+
+        Weight: 1
       tags:
         - Trade
       parameters:
         - $ref: '#/components/parameters/symbol'
         - $ref: '#/components/parameters/listClientOrderId'
         - $ref: '#/components/parameters/side'
-        - name: quantity
-          in: query
-          description: order quantity
-          required: true
-          schema:
-            type: number
-            format: float
+        - $ref: '#/components/parameters/quantity'
         - name: limitClientOrderId
           in: query
           description: A unique Id for the limit order  
           schema:
             type: number
             format: float
-        - name: type
-          in: query
-          required: true
-          description: LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER etc
-          schema:
-            type: string
-            enum: [LIMIT, MARKET, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER]
-        - name: timeInForce
-          in: query
-          description: GTC, IOC or FOK
-          schema:
-            type: string
-            enum: [GTC, IOC, FOK]
-        - name: quantity
-          in: query
-          description: order quantity
-          schema:
-            type: number
-            format: float
-        - name: quoteOrderQty
-          in: query
-          description: quote quantity
-          schema:
-            type: number
-            format: float
         - name: price
           in: query
-          description: order price
+          required: true
           schema:
             type: number
             format: float
-        - name: newClientOrderId
+        - name: limitIcebergQty
           in: query
-          description: order id by client
+          schema:
+            type: number
+            format: float
+        - name: stopClientOrderId
+          in: query
           schema:
             type: string
         - name: stopPrice
           in: query
-          description: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
+          required: true
           schema:
             type: number
             format: float
-        - name: icebergQty
+        - name: stopLimitPrice
           in: query
-          description: Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
           schema:
             type: number
             format: float
-        - name: newOrderRespType
+        - name: stopIcebergQty
           in: query
-          description: ACK, RESULT, or FULL
+          schema:
+            type: number
+            format: float
+        - name: stopLimitTimeInForce
+          in: query
           schema:
             type: string
-        - name: recvWindow
-          in: query
-          description: The value cannot be greater than 60000
-          schema:
-            type: integer
+            enum: [GTC,FOK,IOC]
+        - $ref: '#/components/parameters/newOrderRespType'
         - $ref: '#/components/parameters/recvWindow'
         - $ref: '#/components/parameters/timestamp'
         - $ref: '#/components/parameters/signature'
       responses:
         '200':
-          description: test order result
-          content: {}
+          description: new oco details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderListId:
+                    type: integer
+                    example: 0
+                  contingencyType:
+                    type: string
+                    example: "OCO"
+                  listStatusType:
+                    type: string
+                    example: "EXEC_STARTED"
+                  listOrderStatus:
+                    type: string
+                    example: "EXECUTING"
+                  listClientOrderId:
+                    type: string
+                    example: "JYVpp3F0f5CAG15DhtrqLp"
+                  transactionTime:
+                    type: integer
+                    example: 1563417480525
+                  symbol:
+                    type: string
+                    example: "LTCBTC"
+                  orders:
+                    type: array
+                    items:
+                      properties:
+                        symbol:
+                          type: string
+                          example: "LTCBTC"
+                        orderId:
+                          type: integer
+                          example: 2
+                        clientOrderId:
+                          type: string
+                          example: "Kk7sqHb9J6mJWTMDVW7Vos"
+                  orderReports:
+                    type: array
+                    items:
+                      properties:
+                        symbol:
+                          type: string
+                          example: "LTCBTC"
+                        orderId:
+                          type: integer
+                          example: 2
+                        orderListId:
+                          type: integer
+                          example: 0
+                        clientOrderId:
+                          type: string
+                          example: "Kk7sqHb9J6mJWTMDVW7Vos"    
+                        transactTime:
+                          type: integer
+                          example: 1563417480525    
+                        price:
+                          type: string
+                          example: "0.000000"   
+                        origQty:
+                          type: string
+                          example: "0.624363" 
+                        executedQty:
+                          type: string
+                          example: "0.000000" 
+                        cummulativeQuoteQty:
+                          type: string
+                          example: "0.000000" 
+                        status:
+                          type: string
+                          example: "NEW" 
+                        timeInForce:
+                          type: string
+                          example: "GTC" 
+                        type:
+                          type: string
+                          example: "STOP_LOSS"   
+                        side:
+                          type: string
+                          example: "BUY"   
+                        stopPrice:
+                          type: string
+                          example: "0.960664" 
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'        
   /api/v3/orderList:
     get:
       summary: Query OCO (USER_DATA)
       description: |-
         Retrieves a specific OCO based on provided optional parameters
 
-        Weight: 1 
+        Weight: 1
       tags:
         - Trade
       parameters:
@@ -934,7 +1025,7 @@ paths:
         - $ref: '#/components/parameters/signature'
       responses:
         '200':
-          description: order details
+          description: oco details
           content:
             application/json:
               schema:
@@ -945,10 +1036,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'        
     delete:
       summary: Cancel OCO (TRADE)
       description: |-
         Cancel an entire Order List
+
+        Canceling an individual leg will cancel the entire OCO
 
         Weight: 1 
       tags:
@@ -963,7 +1062,7 @@ paths:
         - $ref: '#/components/parameters/signature'
       responses:
         '200':
-          description: order details
+          description: oco order delete report
           content:
             application/json:
               schema:
@@ -975,6 +1074,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'           
   /api/v3/allOrderList:
     get:
       summary: Query all OCO (USER_DATA)
@@ -994,7 +1099,7 @@ paths:
         - $ref: '#/components/parameters/signature'
       responses:
         '200':
-          description: order details
+          description: oco order list
           content:
             application/json:
               schema:
@@ -1007,6 +1112,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'           
   /api/v3/openOrderList:
     get:
       summary: Query Open OCO (USER_DATA)
@@ -1020,7 +1131,7 @@ paths:
         - $ref: '#/components/parameters/signature'
       responses:
         '200':
-          description: order details
+          description: oco order list
           content:
             application/json:
               schema:
@@ -1033,6 +1144,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'          
   /api/v3/account:
     get:
       summary: Account Information (USER_DATA)
@@ -1048,7 +1165,7 @@ paths:
         - $ref: '#/components/parameters/signature'
       responses:
         '200':
-          description: order details
+          description: account details
           content:
             application/json:
               schema:
@@ -1059,11 +1176,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'          
   /api/v3/myTrades:
     get:
       summary: Account Trade List (USER_DATA)
       description: |-
         Get trades for a specific account and symbol.
+
+        If fromId is set, it will get id >= that fromId. Otherwise most recent orders are returned.
 
         Weight: 5
       tags:
@@ -1090,7 +1215,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-
+        '401':
+            description: Unauthorized Request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'      
   /sapi/v1/margin/transfer:
     post:
       summary: Margin Account Transfer (MARGIN)
