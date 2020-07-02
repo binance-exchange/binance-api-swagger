@@ -33,7 +33,10 @@ Developers that are intergrating Binance Public API with client application and 
 ## Where is the API document
     - https://github.com/binance-exchange/binance-official-api-docs
     - https://binance-docs.github.io/apidocs/spot/en/
+    
+## How it looks like
+<p align="center"><img src="https://raw.githubusercontent.com/binance-exchange/binance-api-swagger/assets/screen.png"/></p>
 
-
+ 
 ## License
 MIT
