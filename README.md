@@ -37,6 +37,9 @@ Developers that are intergrating Binance Public API with client application and 
 ## How it looks like
 <p align="center"><img src="https://raw.githubusercontent.com/binance-exchange/binance-api-swagger/assets/screen.png"/></p>
 
- 
+
+## Found an issue
+Please open an issue ticket in the repo.
+
 ## License
 MIT
