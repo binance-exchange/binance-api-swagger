@@ -2209,7 +2209,7 @@ paths:
       description: |- 
         Get information of coins (available for deposit and withdraw) for user.
 
-        Weight: 5
+        Weight: 1
       tags:
         - Wallet
       parameters:
@@ -2223,42 +2223,113 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  coin: "BTC"
-                  depositAllEnable: true
-                  free: "0.08074558"
-                  freeze: "0.00000000"
-                  ipoable: "0.00000000"
-                  ipoing: "0.00000000"
-                  isLegalMoney: false
-                  locked: "0.00000000"
-                  name: "Bitcoin"
+                properties:
+                  coin:
+                    type: string
+                    example: "BTC"
+                  depositAllEnable:
+                    type: boolean
+                    example: true
+                  free:
+                    type: string
+                    example: "0.00000000"
+                  freeze:
+                    type: string
+                    example: "0.00000000"
+                  ipoable:
+                    type: string
+                    example: "0.00000000"
+                  ipoing:
+                    type: string
+                    example: "0.00000000"
+                  isLegalMoney:
+                    type: integer
+                    example: false
+                  locked:
+                    type: string
+                    example: "0.00000000"
+                  name:
+                    type: string
+                    example: "Bitcoin"
                   networkList:
-                    - 
-                      addressRegex: "^(bnb1)[0-9a-z]{38}$"
-                      coin: "BTC"
-                      depositDesc: "Wallet Maintenance, Deposit Suspended"
-                      depositEnable: false
-                      isDefault: false,       
-                      memoRegex: "^[0-9A-Za-z\\-_]{1,120}$"
-                      minConfirm: 1
-                      name: "BEP2"
-                      network: "BNB"
-                      resetAddressStatus: false
-                      specialTips: "Both a MEMO and an Address are required to successfully deposit your BEP2-BTCB tokens to Binance."
-                      unLockConfirm: 0
-                      withdrawDesc: "Wallet Maintenance, Withdrawal Suspended"
-                      withdrawEnable: false
-                      withdrawFee: "0.00000220"
-                      withdrawMin: "0.00000440"
-                  storage: "0.00000000"
-                  trading: true
-                  withdrawAllEnable: true
-                  withdrawing: "0.00000000"
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        addressRegex:
+                          type: string
+                          example: "^(bnb1)[0-9a-z]{38}$"
+                        coin:
+                          type: string
+                          example: "BTC"
+                        depositDesc:
+                          type: string
+                          example: "Wallet Maintenance, Deposit Suspended"
+                        depositEnable:
+                          type: boolean
+                          example: false
+                        isDefault:
+                          type: boolean
+                          example: false
+                        memoRegex:
+                          type: string
+                          example: "^[0-9A-Za-z\\-_]{1,120}$"
+                        minConfirm:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "BEP2"
+                        resetAddressStatus:
+                          type: boolean
+                          example: false 
+                        specialTips:
+                          type: string
+                          example: "Both a MEMO and an Address are required to successfully deposit your BEP2-BTCB tokens to Binance." 
+                        unLockConfirm:
+                          type: integer
+                          example: 0  
+                        withdrawDesc:
+                          type: string
+                          example: "Wallet Maintenance, Withdrawal Suspended"  
+                        withdrawEnable:
+                          type: boolean
+                          example: false    
+                        withdrawFee:
+                          type: string
+                          example: "0.00000220" 
+                        withdrawMin:
+                          type: string
+                          example: "0.00000440"      
+                  storage:
+                    type: string
+                    example: "0.00000000"
+                  trading:
+                    type: boolean
+                    example: true 
+                  withdrawAllEnable:
+                    type: boolean
+                    example: true 
+                  withdrawing:
+                    type: string
+                    example: "0.00000000"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sapi/v1/accountSnapshot:
     get:
       summary: Daily Account Snapshot (USER_DATA)
-      description: |- 
+      description: |-
+        
         Weight: 1
       tags:
         - Wallet
@@ -2289,20 +2360,56 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  code: 200
-                  msg: ""
+                properties:
+                  code: 
+                    type: integer
+                    example: 200
+                  msg:
+                    type: string
+                    example: ""
                   snapshotVos:
-                    - 
-                      data:
-                        balances:
-                          -
-                            asset: "BTC"
-                            free: "0.09905021"
-                            locked: "0.00000000"
-                        totalAssetOfBtc: "100"
-                      type: "spot"
-                      updateTime: 1576281599000
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        data:
+                          type: object
+                          properties:
+                            balances:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  asset:
+                                    type: string
+                                    example: "BTC"
+                                  free:
+                                    type: string
+                                    example: "0.2"
+                                  locked:
+                                    type: string
+                                    example: "0.001"
+                            totalAssetOfBtc:
+                              type: string
+                              example: "0.09905021"
+                        type:
+                          type: string
+                          example: "spot"  
+                        updateTime:
+                          type: integer
+                          example: 1576281599000
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'                      
   /sapi/v1/account/disableFastWithdrawSwitch:
     post:
       summary: Disable Fast Withdraw Switch (USER_DATA)
@@ -2319,13 +2426,20 @@ paths:
         - $ref: '#/components/parameters/signature' 
       responses:
         '200':
-          description: ""
+          description: return empty
+          content: {}
+        '400':
+          description: Bad Request
           content:
             application/json:
               schema:
-                type: object
-                example:
-                  {}
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sapi/v1/account/enableFastWithdrawSwitch:
     post:
       summary: Enable Fast Withdraw Switch (USER_DATA)
@@ -2343,13 +2457,20 @@ paths:
         - $ref: '#/components/parameters/signature' 
       responses:
         '200':
-          description: ""
+          description: return empty
+          content: {}
+        '400':
+          description: Bad Request
           content:
             application/json:
               schema:
-                type: object
-                example:
-                  {}
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sapi/v1/capital/withdraw/apply:
     post:
       summary: Withdraw
@@ -2366,10 +2487,12 @@ paths:
         - $ref: '#/components/parameters/coin'
         - name: withdrawOrderId
           in: query
+          description: client id for withdraw
           schema:
             type: string
         - name: network
           in: query
+          description: getting value from `GET /sapi/v1/capital/config/getall`
           schema:
             type: string
         - name: address
@@ -2379,6 +2502,7 @@ paths:
             type: string
         - name: addressTag
           in: query
+          description: Secondary address identifier for coins like XRP,XMR etc.
           schema:
             type: string
         - name: amount
@@ -2389,8 +2513,13 @@ paths:
             format: float
         - name: transactionFeeFlag
           in: query
+          description: |- 
+            When making internal transfer
+            - `true` ->  returning the fee to the destination account; 
+            - `false` -> returning the fee back to the departure account. 
           schema:
             type: boolean
+            default: false
         - name: name
           in: query
           schema:
@@ -2405,8 +2534,22 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  id: "7213fea8e94b4a5593d507237e5a555b"
+                properties:
+                  id:
+                    type: string
+                    example: "7213fea8e94b4a5593d507237e5a555b"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sapi/v1/capital/deposit/hisrec:
     get:
       summary: Deposit History（supporting network） (USER_DATA)
@@ -2427,7 +2570,10 @@ paths:
             example: "BNB"
         - name: status
           in: query
-          description: 0 -> pending, 6 -> credited but cannot withdraw, 1 -> success
+          description: |-
+            0 -> pending\
+            6 -> credited but cannot withdraw\
+            1 -> success
           schema:
             type: integer
             enum: [0, 6, 1]
@@ -2444,17 +2590,34 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                example:
-                  -
-                    address": "0xddc66e4313fd6c737b6cae67cad90bb4e0ac7092"
-                    addressTag": ""
-                    amount": "139.04370000"
-                    coin": "USDT"
-                    insertTime": 1566791463000
-                    network": "ETH"
-                    status": 1
-                    txId": "0x5759dfe9983a4c7619bce9bc736bb6c26f804091753bf66fa91e7cd5cfeebafd"
+                type: array
+                items:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                      example: "0xddc66e4313fd6c737b6cae67cad90bb4e0ac7092"
+                    addressTag:
+                      type: string
+                      example: ""
+                    amount:
+                      type: string
+                      example: "139.04370000"
+                    coin:
+                      type: string
+                      example: "USDT"
+                    insertTime:
+                      type: integer
+                      example: 1566791463000
+                    network:
+                      type: string
+                      example: "ETH"
+                    status:
+                      type: integer
+                      example: 1
+                    txId:
+                      type: string
+                      example: "0x5759dfe9983a4c7619bce9bc736bb6c26f804091753bf66fa91e7cd5cfeebafd"                
   /sapi/v1/capital/withdraw/history:
     get:
       summary: Withdraw History (supporting network) (USER_DATA)
@@ -2500,17 +2663,46 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                example:
-                  -
-                    address: "1FZdVHtiBqMrWdjPyRPULCUceZPJ2WLCsB"
-                    amount: "0.00150000"
-                    applyTime: "2019-09-24 12:43:45"
-                    coin: "BTC"
-                    id: "156ec387f49b41df8724fa744fa82719"
-                    network: "BTC"
-                    status: 6
-                    txId: "60fd9007ebfddc753455f95fafa808c4302c836e4d1eebc5a132c36c1d8ac354"
+                type: array
+                items:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                      example: "1FZdVHtiBqMrWdjPyRPULCUceZPJ2WLCsB"
+                    amount:
+                      type: string
+                      example: "0.00150000"
+                    applyTime:
+                      type: string
+                      example: "2019-09-24 12:43:45"
+                    coin:
+                      type: string
+                      example: "BTC"
+                    id:
+                      type: string
+                      example: "156ec387f49b41df8724fa744fa82719"
+                    network:
+                      type: string
+                      example: "BTC"
+                    status:
+                      type: integer
+                      example: 6
+                    txId:
+                      type: string
+                      example: "60fd9007ebfddc753455f95fafa808c4302c836e4d1eebc5a132c36c1d8ac354"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sapi/v1/capital/deposit/address:
     get:
       summary: Withdraw History (supporting network) (USER_DATA)
@@ -2541,12 +2733,31 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  -
-                    address: "1FZdVHtiBqMrWdjPyRPULCUceZPJ2WLCsB"
-                    coin: "BTC"
-                    tag: ""
-                    url: "https://btc.com/1HPn8Rx2y6nNSfagQBKy27GB99Vbzg89wv"
+                properties:
+                  address:
+                    type: string
+                    example: "1FZdVHtiBqMrWdjPyRPULCUceZPJ2WLCsB"
+                  coin:
+                    type: string
+                    example: "BTC"
+                  tag:
+                    type: string
+                    example: ""
+                  url:
+                    type: string
+                    example: "https://btc.com/1HPn8Rx2y6nNSfagQBKy27GB99Vbzg89wv"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /wapi/v3/accountStatus.html:
     get:
       summary: Account Status (USER_DATA)
@@ -2567,9 +2778,25 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  msg: "Normal"
-                  success: true
+                properties:
+                  msg:
+                    type: string
+                    example: "Normal"
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'                  
   /wapi/v3/apiTradingStatus.html:
     get:
       summary: Account API Trading Status (USER_DATA)
@@ -2590,17 +2817,68 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  success: true
+                properties:
+                  success:
+                    type: boolean
+                    example: true
                   status:
-                    isLocked: false
-                    plannedRecoverTime: 0
-                    triggerCondition:
-                      gcr: 150
-                      ifer: 150
-                      ufr: 300
-                    indicators:
-                  updateTime: 1593500803840
+                    type: object
+                    properties:
+                      isLocked:
+                        type: boolean
+                        example: false
+                      plannedRecoverTime:
+                        type: integer
+                        example: 0
+                      triggerCondition:
+                        type: object
+                        properties:
+                          gcr:
+                            type: integer
+                            example: 150
+                          ifer:
+                            type: integer
+                            example: 150
+                          ufr:
+                            type: integer
+                            example: 150
+                      indicators:
+                        type: object
+                        properties:
+                          BTCUSDT:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                i:
+                                  type: string
+                                  example: "UFR"
+                                c:
+                                  type: integer
+                                  example: 20
+                                v:
+                                  type: number
+                                  format: float
+                                  example: 20
+                                t:
+                                  type: number
+                                  format: float
+                                  example: 20
+                      updateTime:
+                        type: integer
+                        example: 1593500803840
+        '400':    
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'  
   /wapi/v3/userAssetDribbletLog.html:
     get:
       summary: DustLog (USER_DATA)
@@ -2609,7 +2887,7 @@ paths:
 
         Weight: 1
       tags:
-        - Wallet     
+        - Wallet   
       parameters:
         - $ref: '#/components/parameters/timestamp'
         - $ref: '#/components/parameters/recvWindow'
@@ -2621,25 +2899,71 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  success: true
+                properties:
+                  success:
+                    type: boolean
+                    example: true
                   results:
-                    total: 2
-                    rows: 
-                      - 
-                        transfered_total: "0.00132256"
-                        service_charge_total: "0.00002699"
-                        tran_id: 4359321
-                        logs:
-                          - 
-                            tranId: 4359321
-                            serviceChargeAmount: "0.000009"
-                            uid: "10000015"
-                            amount: "0.0009"
-                            operateTime: "2018-05-03 17:07:04"
-                            transferedAmount: "0.000441"
-                            fromAsset: "USDT"
-                        operate_time: "2018-05-03 17:07:04"
+                    type: object
+                    properties:
+                      total: 
+                        type: integer
+                        example: 2
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            transfered_total:
+                              type: string
+                              example: "0.00132256"
+                            service_charge_total:
+                              type: string
+                              example: "0.00002699"
+                            tran_id:
+                              type: integer
+                              example: 4359321
+                            logs:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  tranId:
+                                    type: integer
+                                    example: 4359321
+                                  serviceChargeAmount:
+                                    type: string
+                                    example: "0.000009"
+                                  uid:
+                                    type: string
+                                    example: "10000015" 
+                                  amount:
+                                    type: string
+                                    example: "0.0009"
+                                  operateTime:
+                                    type: string
+                                    example: "2018-05-03 17:07:04"     
+                                  transferedAmount:
+                                    type: string
+                                    example: "0.000441"  
+                                  fromAsset:
+                                    type: string
+                                    example: "USDT"
+                            operate_item:
+                              type: string
+                              example: "2018-05-03 17:07:04"
+        '400':    
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sapi/v1/asset/dust:
     post:
       summary: Dust Transfer
@@ -2667,34 +2991,68 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  totalServiceCharge: "0.02102542"
-                  totalTransfered: "1.05127099"
+                properties:
+                  totalServiceCharge:
+                    type: string
+                    example: "0.02102542"
+                  totalTransfered:
+                    type: string
+                    example: "1.05127099"
                   transferResult:
-                    - 
-                      amount: "0.03000000"
-                      fromAsset: "ETH"
-                      operateTime: 1563368549307
-                      serviceChargeAmount: "0.00500000"
-                      tranId: 2970932918
-                      transferedAmount: "0.25000000"
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        amount:
+                          type: string
+                          example: "0.03000000"
+                        fromAsset:
+                          type: string
+                          example: "ETH"
+                        operateTime:
+                          type: integer
+                          example: 1563368549307
+                        serviceChargeAmount:
+                          type: string
+                          example: "0.00500000"
+                        tranId:
+                          type: integer
+                          example: 2970932918
+                        transferedAmount:
+                          type: string
+                          example: "0.25000000"
+        '400':    
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sapi/v1/asset/assetDividend:
     get:
       summary: Dust Transfer
       description: |-
-        Asset Dividend Record 
+        Query asset Dividend Record 
 
         Weight: 1
       tags:
         - Wallet     
       parameters:
-        - name: asset
-          in: query
-          schema:
-            type: string
+        - $ref: '#/components/parameters/optionalAsset'
         - $ref: '#/components/parameters/startTime'
         - $ref: '#/components/parameters/endTime'
-        - $ref: '#/components/parameters/limit'
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: string
+            default: 20
+            maximum: 50
         - $ref: '#/components/parameters/timestamp'
         - $ref: '#/components/parameters/recvWindow'
         - $ref: '#/components/parameters/signature'
@@ -2705,15 +3063,42 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  rows:
-                    -
-                      amount: "10.00000000"
-                      asset: "BHFT"
-                      divTime: 1563189166000
-                      enInfo: "BHFT distribution"
-                      tranId: 2968885920
-                  total: 1
+                properties:
+                  rows: 
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        amount:
+                          type: string
+                          example: "10.00000000"
+                        asset:
+                          type: string
+                          example: "BHFT"
+                        divTime:
+                          type: integer
+                          example: 1563189166000
+                        enInfo:
+                          type: string
+                          example: "BHFT distribution"
+                        tranId:
+                          type: integer
+                          example: 2968885920
+                  total: 
+                    type: integer
+                    example: 1
+        '400':    
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /wapi/v3/assetDetail.html:
     get:
       summary: Asset Detail (USER_DATA)
@@ -2736,14 +3121,40 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  success: true
+                properties:
+                  success:
+                    type: boolean
+                    example: true
                   assetDetail:
-                    CTR:
-                      minWithdrawAmount: "0.02000000"
-                      depositStatus: true
-                      withdrawFee: 0.01
-                      withdrawStatus: true
+                    type: object
+                    properties:
+                      CTR:
+                        type: object
+                        properties:
+                          minWithdrawAmount:
+                            type: string
+                            example: "0.02000000"
+                          depositStatus:
+                            type: boolean
+                            example: true
+                          withdrawFee:
+                            type: string
+                            example: 0.01
+                          withdrawStatus:
+                            type: boolean
+                            example: true
+        '400':    
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /wapi/v3/tradeFee.html:
     get:
       summary: Trade Fee (USER_DATA)
@@ -2765,13 +3176,36 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  success: true
-                  tradeFee: 
-                    -
-                      symbol: "ADABNB"
-                      maker: 0.9000
-                      taker: 1.0000
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  tradeFee:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        symbol:
+                          type: string
+                          example: "ADABNB"
+                        maker:
+                          type: integer
+                          example: 0.9000
+                        taker:
+                          type: integer
+                          example: 1.0000
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'            
   /api/v3/userDataStream:
     post:
       summary: Create a ListenKey (USER_STREAM)
@@ -2788,8 +3222,16 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  listenKey: "pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"
+                properties:
+                  listenKey:
+                    type: string
+                    example: "pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'  
     put:
       summary: Ping/Keep-alive a ListenKey (USER_STREAM)
       description: |-
@@ -2814,6 +3256,12 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
     delete:
       summary: Close a ListenKey (USER_STREAM)
       description: |-
@@ -2838,6 +3286,12 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /sapi/v1/userDataStream:
     post:
       summary: Create a ListenKey (USER_STREAM)
@@ -2854,8 +3308,16 @@ paths:
             application/json:
               schema:
                 type: object
-                example:
-                  listenKey: "pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"
+                properties:
+                  listenKey:
+                    type: string
+                    example: "pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
     put:
       summary: Ping/Keep-alive a ListenKey (USER_STREAM)
       description: |-
@@ -2880,6 +3342,12 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'  
     delete:
       summary: Close a ListenKey (USER_STREAM)
       description: |-
@@ -2904,7 +3372,12 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/error'
-                
+        '401':
+          description: Unauthorized Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'         
 components:
   parameters:
     asset:
