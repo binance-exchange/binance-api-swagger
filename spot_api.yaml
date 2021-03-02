@@ -381,8 +381,12 @@ paths:
               application/json:
                 schema:
                   type: array
+                  items:
+                    oneOf:
+                      - type: string
+                      - type: integer
                 example:
-                  -  
+                  -
                     - 1592864100000
                     - "9668.28000000"
                     - "9668.28000000"
