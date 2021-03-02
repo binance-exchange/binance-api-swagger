@@ -5,7 +5,7 @@ info:
     The swagger file of Binance Public API
 
     API documents:
-      - [https://github.com/binance-exchange/binance-official-api-docs](https://github.com/binance-exchange/binance-official-api-docs)
+      - [https://github.com/binance/binance-spot-api-docs](https://github.com/binance/binance-spot-api-docs)
       - [https://binance-docs.github.io/apidocs/spot/en](https://binance-docs.github.io/apidocs/spot/en)
   version: '1.0'
   license:
