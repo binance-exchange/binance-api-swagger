@@ -2247,7 +2247,7 @@ paths:
                     type: string
                     example: "0.00000000"
                   isLegalMoney:
-                    type: integer
+                    type: boolean
                     example: false
                   locked:
                     type: string
